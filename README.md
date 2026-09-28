@@ -58,7 +58,12 @@ it must be built (`build/meson-linux`, which has the C guest toolchain).
 
 ```
 ./waterbox/run-gate.sh                  # the core: native == sandbox, savestates, the game's own checks
+./waterbox/tests/run-frontend.sh        # the package in Chimera: chimera-run and the headless frontend
 ```
+
+The frontend gate uses a built Chimera checkout (`--chimera-root`, else
+`../chimera` or `~/chimera`) and writes nothing into it: its config, data
+home and Base path are all in `build/frontend`.
 
 The data is the user's: put Prince of Persia 1.0's DAT files in
 `tests/roms-local/pop10` (gitignored), or pass `-d`. Without it only the

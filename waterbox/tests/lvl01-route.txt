@@ -1,6 +1,6 @@
 # Prince of Persia 1.0, level 1, any%: JaffarPlus's solution
 # (extern/quickerSDLPoP/tests/lvl01.anyPercent.sol in SergioMartin86/jaffarPlus,
-# 243 ticks, found against quickerSDLPoP with 1.4 data), made valid for this core.
+# 244 rows, found against quickerSDLPoP with 1.4 data), made valid for this core.
 #
 # One step per line, JaffarPlus's |r|LRUDS| rows (r = Restart Level, Ctrl+A).
 # Step 0 is the first tick of level 1 after Init with skip_title on and copy
@@ -11,7 +11,8 @@
 # opening-music crouch down from a fixed number (33 ticks, 4 after a restart);
 # SDLPoP waits for the music itself, which on the 1.0 data holds the prince 30
 # ticks longer after the restart at row 8. Everything after is JaffarPlus's
-# route as it was: the prince leaves level 1 on the last row (step 272).
+# route as it was: the prince leaves level 1 on the last row (step 273). The
+# route does not depend on the seed: it also finishes without the poke.
 |.|.....|
 |.|....S|
 |.|.....|

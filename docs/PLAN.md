@@ -287,17 +287,49 @@ The first run of the controls was itself wrong: restoring a file from its
 backup gave it the backup's older time, so make kept the broken objects and
 each break leaked into the next. Restores are touched now.
 
+## The frontend gate (waterbox/tests/run-frontend.sh)
+
+9 legs, green on 2026-09-28 against Chimera 3f504a61d, each seen to fail
+with its own break:
+
+- **chimera-run**, the engine with no frontend: the route from a movie file,
+  and from a hand-written project with no files (the settings and the movie
+  from the project) - the Game State and Level domains and the last picture
+  are the native reference's; a project whose "levels" slot holds a level set
+  with one tile changed plays it without LEVELS.DAT.
+- **Chimera itself**, headless under Mono on a private Xvfb, with a config,
+  data home and Base path of its own (the gate checks nothing was written
+  under the checkout): the project opened and played through Lua, its
+  domains the reference's; the property library - `game.list()` has the
+  core's 183, `game.get("Kid.X")` is the block's byte, the bit-field element
+  `Room 1.Tile[10]` reads, `game.set` takes, an unknown name is nil; the
+  core's own refusal (SDLPoP's later-release DIGISND1.DAT, in a project that
+  pins nothing so Chimera asks nothing first) is what Chimera shows; the
+  package's keybinds become the defaults.
+
+| Break | Leg that failed |
+| --- | --- |
+| the guest seeds differently | engine:route, engine:project, gui:project |
+| the level-set slot ignored | engine:levels-slot |
+| GetGameProperties empty | gui:game-properties |
+| no file check | gui:refusal |
+| no default_keybinds.json in the package | gui:keybinds |
+
+(The last leg's own control - letting Chimera write where it likes - would
+write into the checkout, so it was not run.)
+
 ## The known route
 
 JaffarPlus's level 1 any% solution (`extern/quickerSDLPoP/tests/
-lvl01.anyPercent.sol` in jaffarPlus, 243 ticks, found with quickerSDLPoP and
+lvl01.anyPercent.sol` in jaffarPlus, 244 rows, found with quickerSDLPoP and
 1.4 data) does not replay as it is: quickerSDLPoP counts the level 1
 opening-music crouch down from a fixed number (33 ticks, 4 after a restart),
 where SDLPoP waits for the music itself. With 30 empty rows after row 17 -
 the music's length on the 1.0 data after the route's restart at row 8 - the
-rest is the solution as it was, and the prince leaves level 1 on its last row
-(`waterbox/tests/lvl01-route.txt`, run with skip_title, copy protection off
-and the seed poked to 0 before step 0, as JaffarPlus sets it). JaffarPlus's
+rest is the solution as it was, and the prince leaves level 1 on its last row,
+step 273 (`waterbox/tests/lvl01-route.txt`, run with skip_title, copy
+protection off and the seed poked to 0 before step 0, as JaffarPlus sets it;
+the route does not depend on the seed and finishes without the poke too). JaffarPlus's
 `lvl01.state` is exactly the state Init leaves (Kid at 73,58, frame 102, four
 tile animations), so step 0 is its row 1.
 

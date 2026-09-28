@@ -244,8 +244,10 @@ A whole SDLPoP mod folder is not supported.
 - five pictures, each looked at: the title's "presents" card, level 1, the
   princess's cutscene, level 2, the potions level's manual question
   (`build/gate/*.png`);
-- the route leaves level 1 on the step it should, goes on to level 2, and
-  with copy protection to the potions level;
+- the route puts the prince where it should (room, Kid.X, Kid.Y at steps
+  100, 200 and 273, read through the property table), leaves level 1 on the
+  step it should, goes on to level 2, and with copy protection to the
+  potions level;
 - the rates (12/1, 10/1 then 15/1, 30/1, 60/1, and 10/1 with the sword
   drawn) and the lag (none in play; the title's one, a fade ending);
 - the property table, a poke (Kid.X, Level.Next - the game goes to level 3), a

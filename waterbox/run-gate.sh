@@ -278,10 +278,14 @@ done
 # prince through the exit door on its last row, step 272, in room 9; the game
 # moves on to level 2 in the step after - not a step earlier
 tr="$work/route.trace"
-if [ "$(at "$tr" 272 2)" = "1" ] && [ "$(at "$tr" 273 2)" = "2" ] && [ "$(at "$tr" 273 3)" = "9" ] && [ "$(at "$tr" 273 6)" = "3" ]; then
-	report "route:level-1" PASS "the prince leaves level 1 through room 9 with 3 hit points, Level.Next 2 from step 273"
+# where the route has him on the way: (156,181) in room 1 at step 100, (80,118)
+# in room 9 at step 200, and in the exit door at (134,90) at the end
+pos() { echo "$(at "$tr" "$1" 3):$(at "$tr" "$1" 4),$(at "$tr" "$1" 5)"; }
+if [ "$(at "$tr" 272 2)" = "1" ] && [ "$(at "$tr" 273 2)" = "2" ] && [ "$(at "$tr" 273 6)" = "3" ] &&
+   [ "$(pos 100)" = "1:156,181" ] && [ "$(pos 200)" = "9:80,118" ] && [ "$(pos 273)" = "9:134,90" ]; then
+	report "route:level-1" PASS "Kid at 1:156,181 (step 100), 9:80,118 (200), in the exit door 9:134,90 with 3 HP; Level.Next 2 from step 273"
 else
-	report "route:level-1" FAIL "at 272/273: next level $(at "$tr" 272 2)/$(at "$tr" 273 2), room $(at "$tr" 273 3), HP $(at "$tr" 273 6)"
+	report "route:level-1" FAIL "next level $(at "$tr" 272 2)/$(at "$tr" 273 2) at 272/273, HP $(at "$tr" 273 6); room:x,y $(pos 100) $(pos 200) $(pos 273)"
 fi
 # and on to level 2 through the princess's cutscene (copy protection off) or
 # to the potions level (on, the default); that one's manual question wants a key

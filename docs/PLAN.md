@@ -227,7 +227,7 @@ A whole SDLPoP mod folder is not supported.
 
 ## The gate (waterbox/run-gate.sh)
 
-56 legs, all green on 2026-09-28 with the user's 1.0 data:
+57 legs, all green on 2026-09-28 with the user's 1.0 data:
 
 - build (native, harnesses, core.wbx through check-wbx) and freshness (the
   tested core.wbx must be newer than every source);
@@ -246,8 +246,8 @@ A whole SDLPoP mod folder is not supported.
   (`build/gate/*.png`);
 - the route leaves level 1 on the step it should, goes on to level 2, and
   with copy protection to the potions level;
-- the rates (12/1, 10/1 then 15/1, 30/1, 60/1) and the lag (none in play; the
-  title's one, a fade ending);
+- the rates (12/1, 10/1 then 15/1, 30/1, 60/1, and 10/1 with the sword
+  drawn) and the lag (none in play; the title's one, a fade ending);
 - the property table, a poke (Kid.X, Level.Next - the game goes to level 3), a
   poke in place (the floor under the prince, a bit field - he falls), a
   freeze (the clock's ticks: 60 minutes after 800 steps, 59 without);
@@ -269,6 +269,7 @@ A whole SDLPoP mod folder is not supported.
 | red and blue swapped | 3 pictures (then 5) |
 | copy protection forced off | copy protection, its picture |
 | do_simple_wait's hook a no-op | rates, lag, route, poke, freeze |
+| the fighting speed ignored (fight_speed read as base_speed) | fight-rate |
 | the input-read hook a no-op | lag |
 | a property named twice / overlapping / bits shared / a bad type / past its domain | the table checker, each by name |
 | no copy back into the game | poke, freeze |

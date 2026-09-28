@@ -358,6 +358,15 @@ else
 	report "properties:freeze" FAIL "frozen: $(at "$work/freeze.trace" 799 7) min $(at "$work/freeze.trace" 799 8) ticks; free: $(at "$work/nofreeze.trace" 799 7)"
 fi
 
+# a tick is 1/10 s while the prince's sword is drawn: held drawn by a freeze
+boxed "$wd" --frames 320 --freeze "300-310:Kid.Sword=2" --trace "$work/sword.trace" --trace-props "Kid.Sword" > /dev/null 2>&1
+fight="$(awk '$1 ~ /^[0-9]+$/ && $1 >= 300 && $1 <= 310 { print $2 }' "$work/sword.trace" | sort -u | tr '\n' ' ')"
+if [ "$(rate "$work/sword.trace" 299)" = "12/1" ] && [ "$fight" = "10/1 " ]; then
+	report "steps:fight-rate" PASS "with the sword drawn (Kid.Sword frozen at 2) every tick is 10/1"
+else
+	report "steps:fight-rate" FAIL "before: $(rate "$work/sword.trace" 299), drawn: $fight"
+fi
+
 # the settings reach the game: start on level 3 with 5 minutes and 5 hit points
 wd="$(workdir settings '{"skip_title":true,"first_level":3,"start_minutes_left":5,"start_hitp":5}')"
 boxed "$wd" --frames 2 --trace "$work/settings.trace" --trace-props "$props" > /dev/null 2>&1

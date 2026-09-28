@@ -57,7 +57,9 @@ python3 "$mb/source/guest/package-licenses.py" "$root" "$staging"
 core_version="${CORE_VERSION:-}"
 if [ -z "$core_version" ]; then
 	if commit="$(git -C "$root" rev-parse --short=12 HEAD 2>/dev/null)"; then
-		git -C "$root" diff --quiet HEAD 2>/dev/null || commit="$commit-dirty"
+		# the build applies patches/ inside extern/SDLPoP, which is not an edit of
+		# this repo: a submodule's own working tree does not make the package dirty
+		git -C "$root" diff --quiet --ignore-submodules=dirty HEAD 2>/dev/null || commit="$commit-dirty"
 		core_version="$commit+local"
 	else
 		core_version="unversioned+local"

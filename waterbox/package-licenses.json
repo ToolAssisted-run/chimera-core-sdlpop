@@ -1,0 +1,44 @@
+{
+  "package": "sdlpop",
+  "effectiveTerms": "GPL-3.0-or-later",
+  "commercialUse": "allowed under the GPL",
+  "note": "The built core combines this repository's integration (GPL-3.0-or-later, as SDLPoP) with SDLPoP and SDL 2 (zlib licence), both compiled in from their upstream sources. The package carries none of Prince of Persia's data: the game's original files are the project's firmware, supplied by the user. SDLPoP's own data folder (extracted pictures, a few sound files) is not in the package and the core cannot read it.",
+  "components": [
+    {
+      "name": "chimera-core-sdlpop (integration)",
+      "license": "GPL-3.0-or-later",
+      "url": "https://github.com/ToolAssisted-run/chimera-core-sdlpop",
+      "commit": "{selfCommit}",
+      "file": "LICENSE",
+      "sourceUrl": "https://github.com/ToolAssisted-run/chimera-core-sdlpop/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "SDLPoP",
+      "license": "GPL-3.0-or-later",
+      "url": "https://github.com/NagyD/SDLPoP",
+      "commit": "{submodule:extern/SDLPoP}",
+      "file": "extern/SDLPoP/COPYING",
+      "sourceUrl": "https://github.com/NagyD/SDLPoP/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "SDL 2",
+      "license": "Zlib",
+      "url": "https://github.com/libsdl-org/SDL",
+      "commit": "{submodule:extern/SDL}",
+      "file": "extern/SDL/LICENSE.txt",
+      "sourceUrl": "https://github.com/libsdl-org/SDL/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "Nuked OPL3 1.7.4 (bundled by SDLPoP, src/opl3.c)",
+      "license": "GPL-2.0-or-later",
+      "url": "https://github.com/nukeykt/Nuked-OPL3",
+      "file": "extern/SDLPoP/src/opl3.h"
+    },
+    {
+      "name": "stb_vorbis (bundled by SDLPoP, src/stb_vorbis.c)",
+      "license": "MIT OR Unlicense",
+      "url": "https://github.com/nothings/stb",
+      "file": "waterbox/licenses/stb_vorbis-LICENSE.txt"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+[submodule "extern/SDLPoP"]
+	path = extern/SDLPoP
+	url = https://github.com/NagyD/SDLPoP.git
+[submodule "extern/SDL"]
+	path = extern/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	shallow = true

@@ -1,0 +1,15 @@
+{
+  "_comment": "A Prince of Persia project needs no file of its own: the game is the original 1.0 data, which the project brings as firmware (the core's firmware list). A custom level set is the one file a project may add.",
+  "slots": [
+    {
+      "id": "levels",
+      "title": "Custom levels",
+      "min": 0,
+      "max": 1,
+      "formats": [
+        "dat"
+      ],
+      "help": "A LEVELS.DAT of a custom level set (from a level editor or a mod), played in place of the original levels; the rest of the game is still the original 1.0 data. Leave it empty for the original game."
+    }
+  ]
+}

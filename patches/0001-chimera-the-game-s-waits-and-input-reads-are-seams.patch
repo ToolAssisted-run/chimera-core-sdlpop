@@ -1,0 +1,106 @@
+diff --git a/src/common.h b/src/common.h
+index 34d0ef7..3b980a5 100644
+--- a/src/common.h
++++ b/src/common.h
+@@ -61,6 +61,11 @@ extern "C" {
+ #include "proto.h"
+ #include "data.h"
+ 
++#ifdef CHIMERA_CORE
++// The seams a Chimera core drives the game through (see chimera-core-sdlpop).
++#include "chimera-hooks.h"
++#endif
++
+ #ifndef MAX
+ #define MAX(a,b) ((a)>(b)?(a):(b))
+ #endif
+diff --git a/src/seg000.c b/src/seg000.c
+index 3701636..0cc7308 100644
+--- a/src/seg000.c
++++ b/src/seg000.c
+@@ -1356,6 +1356,9 @@ void get_joystick_state_hor_only(int raw_x, int axis_state[2]) {
+ 
+ // seg000:1051
+ void read_joyst_control() {
++#ifdef CHIMERA_CORE
++	chimera_input_read();
++#endif
+ 	int key_state;
+ 	int* joy_axis_ptr;
+ 	if (fixes->fix_register_quick_input) {
+@@ -1771,6 +1774,9 @@ int key_action = 0;
+ 
+ // seg000:1500
+ void read_keyb_control() {
++#ifdef CHIMERA_CORE
++	chimera_input_read();
++#endif
+ 	int key_state;
+ 	if (fixes->fix_register_quick_input) {
+ 		key_state = KEYSTATE_HELD | KEYSTATE_HELD_NEW;
+diff --git a/src/seg003.c b/src/seg003.c
+index f2a80b8..d1b511e 100644
+--- a/src/seg003.c
++++ b/src/seg003.c
+@@ -105,7 +105,12 @@ void play_level(int level_number) {
+ 		have_sword = /*(level_number != 1)*/ (level_number == 0 || level_number >= custom->have_sword_from_level);
+ 		find_start_level_door();
+ 		// busy waiting?
+-		while (check_sound_playing() && !do_paused()) idle();
++		while (check_sound_playing() && !do_paused()) {
++			idle();
++#ifdef CHIMERA_CORE
++			chimera_idle_step();
++#endif
++		}
+ 		stop_sounds();
+ 		#ifdef USE_REPLAY
+ 		if (replaying) replay_restore_level();
+diff --git a/src/seg009.c b/src/seg009.c
+index a6c496e..26a833b 100644
+--- a/src/seg009.c
++++ b/src/seg009.c
+@@ -305,6 +305,9 @@ char last_text_input;
+ // seg009:000D
+ int read_key() {
+ 	// stub
++#ifdef CHIMERA_CORE
++	chimera_input_read();
++#endif
+ 	int key = last_key_scancode;
+ 	last_key_scancode = 0;
+ 	return key;
+@@ -1483,6 +1486,9 @@ int showmessage(char* text,int arg_4,void *arg_0) {
+ 	do {
+ 		idle();
+ 		key = key_test_quit(); // Press any key to continue...
++#ifdef CHIMERA_CORE
++		if (key == 0) chimera_idle_step();
++#endif
+ 	} while(key == 0);
+ 	//restore_dialog_peel_2(copyprot_dialog->peel);
+ 	//current_target_surface = old_target;
+@@ -1664,7 +1670,12 @@ int input_str(const rect_type* rect,char* buffer,int max_length,const char *init
+ 					return length;
+ 				} else break;
+ 			}
+-			while (!has_timer_stopped(timer_0) && (key = key_test_quit()) == 0) idle();
++			while (!has_timer_stopped(timer_0) && (key = key_test_quit()) == 0) {
++				idle();
++#ifdef CHIMERA_CORE
++				chimera_idle_step();
++#endif
++			}
+ 		} while (1);
+ 		// Only use the printable ASCII chars (UTF-8 encoding)
+ 		char entered_char = last_text_input <= 0x7E ? last_text_input : 0;
+@@ -3802,6 +3813,9 @@ void do_simple_wait(int timer_index) {
+ #endif
+ 	update_screen();
+ 	while (! has_timer_stopped(timer_index)) {
++#ifdef CHIMERA_CORE
++		chimera_wait_for_timer(timer_index);
++#endif
+ 		SDL_Delay(1);
+ 		process_events();
+ 	}

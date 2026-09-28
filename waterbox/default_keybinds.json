@@ -1,0 +1,17 @@
+{
+  "_comment": [
+    "Default bindings for Prince of Persia: the keyboard as the DOS game has it (the arrows, Shift, Enter, Ctrl+A to restart the level),",
+    "and the first pad: the d-pad and left stick as the arrows, A as Shift, Start as Enter, Back as Restart Level."
+  ],
+  "AllTrollers": {
+    "Prince of Persia": {
+      "Up": "Up, J1 POV1U, X1 DpadUp, X1 LStickUp",
+      "Down": "Down, J1 POV1D, X1 DpadDown, X1 LStickDown",
+      "Left": "Left, J1 POV1L, X1 DpadLeft, X1 LStickLeft",
+      "Right": "Right, J1 POV1R, X1 DpadRight, X1 LStickRight",
+      "Shift": "Shift, LeftShift, RightShift, J1 B1, X1 A",
+      "Enter": "Enter, J1 B10, X1 Start",
+      "Restart Level": "Ctrl+A, J1 B9, X1 Back"
+    }
+  }
+}

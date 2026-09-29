@@ -179,7 +179,7 @@ gui() {
 	local tag="$1" cfg="$2" project="$3" nframes="$4"; shift 4
 	local fw=(); for f in "$@"; do fw+=("--firmware=$f"); done
 	mkdir -p "$work/$tag"
-	printf 'frames=%s\nout=%s\nmeta=%s\nshot=%s\n' "$nframes" "$work/$tag" "$work/$tag/meta.txt" "$work/$tag/shot.png" > "$work/$tag/job.txt"
+	printf 'frames=%s\nout=%s\nmeta=%s\nshot=%s\nsave=%s\n' "$nframes" "$work/$tag" "$work/$tag/meta.txt" "$work/$tag/shot.png" "${GUI_SAVE:-0}" > "$work/$tag/job.txt"
 	( cd "$work" && MINIHAWK_JOB="$work/$tag/job.txt" timeout 300 mono "$emu_exe" --headless "--config=$cfg" \
 		"--core=$pkg" "${fw[@]}" "--project=$project" "--lua=$here/frontend.lua" ) > "$work/$tag.log" 2>&1
 	echo $?
@@ -187,7 +187,7 @@ gui() {
 meta() { sed -n "s/^$2=//p" "$work/$1/meta.txt" 2>/dev/null; }
 
 cp "$work/route.chimeraProject" "$work/gui.chimeraProject"
-gui gui "$config" "$work/gui.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
+GUI_SAVE=1 gui gui "$config" "$work/gui.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
 if [ "$(meta gui status)" = "OK" ] && same "$work/gui/gamestate.bin" "$work/gui/level.bin"; then
 	report "gui:project" PASS "the project opened in Chimera: after $(meta gui frames) frames ($(meta gui lag) lag) Game State and Level are the reference's"
 else
@@ -210,6 +210,22 @@ if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "31" ] && cmp -s "$work
 	report "gui:cheats-project" PASS "a project with the cheats on ($ncols columns): More Time on row 50 reaches the game, Game State is the reference's"
 else
 	report "gui:cheats-project" FAIL "status $(meta cheatsgui status) $(meta cheatsgui detail), $ncols columns (build/frontend/cheatsgui.log)"
+fi
+
+# the game's own timer (the table's gameTimer, Time.IGT Ms): Chimera reads it
+# after every frame, and the project saved at the movie's end carries it -
+# the native reference's, and as a timer shows it
+"$rn" "$work/native" --frames "$frames" --movie "$route" --trace "$work/igt.trace" --trace-props "Time.IGT Ms,Time.IGT Ticks" > /dev/null 2>&1
+want_ms="$(awk -v s=$((frames - 1)) '$1 == s { print $4 }' "$work/igt.trace")"
+want_ticks="$(awk -v s=$((frames - 1)) '$1 == s { print $5 }' "$work/igt.trace")"
+hdr() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['headers'].get(sys.argv[2], ''))" "$work/gui.chimeraProject" "$1"; }
+want_text="$(printf '%02d:%02d.%03d' $((want_ms / 60000)) $((want_ms / 1000 % 60)) $((want_ms % 1000)))"
+if [ "$(meta gui saved)" = "1" ] && [ -n "$want_ms" ] && [ "$want_ms" = "$(( want_ticks * 1000 / 12 ))" ] && [ "$want_ticks" -gt 0 ] &&
+   [ "$(meta gui game_igt_ms)" = "$want_ms" ] && [ "$(hdr GameTimeMs)" = "$want_ms" ] && [ "$(hdr GameTime)" = "$want_text" ] &&
+   [ "$(hdr GameTimeFrame)" = "$frames" ]; then
+	report "gui:game-time" PASS "IGT $want_text ($want_ticks ticks) after $frames frames: game.get, and the saved project's GameTime headers, are the reference's"
+else
+	report "gui:game-time" FAIL "saved $(meta gui saved); reference $want_ms ms ($want_ticks ticks); lua $(meta gui game_igt_ms); headers $(hdr GameTimeMs) '$(hdr GameTime)' @ $(hdr GameTimeFrame)"
 fi
 
 # the property library, where this Chimera has it: the table is the one the

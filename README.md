@@ -53,13 +53,19 @@ patch 0003 enters the hall of fame's name from a setting.
   Flip Screen, Feather Fall, Look Left/Right/Up/Down, Look Back, Blind Mode,
   Add Hit Point and Add Max Hit Point. Without the setting they are not
   buttons at all (`IsButtonActive`).
-- **Properties**: 191 in `GetGameProperties` (JaffarPlus's list, and more): the
+- **Properties**: 193 in `GetGameProperties` (JaffarPlus's list, and more): the
   prince and the guard, the level, the clock, the random seed in a packed
   `Game State` block, copied out after each step and back before the next (so
   pokes and freezes work); the level's rooms, tiles, links, guards and button
   events, the falling floors, the tile animations, the hall of fame, and the
   guards' fighting tables and level colours the game plays by, in place, as
   further domains, described as arrays and bit fields.
+- **The game's timer**: `Time.IGT Ticks` and `Time.IGT Ms`, TASVideos'
+  GameTimer as quickerSDLPoP prints it - the ticks of 1/12 s between the clock
+  the game started with and the clock now (it loses one per tick of play and
+  rolls a minute over after 719), times 1000/12. The table names it
+  (`"gameTimer"`), so Chimera shows it as `IGT mm:ss.mmm` and saves it in the
+  project at the end of the movie.
 - **Settings** that change play, recorded in the project: the version, the
   cheats, the player name, the sound card, the random seed, copy protection (on, as in the
   original), the first level, the minutes, the hit points, skipping the title,

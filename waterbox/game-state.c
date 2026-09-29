@@ -43,6 +43,7 @@ typedef struct
 static uint8_t g_kid_prev_frame;
 static float g_kid_pos_x, g_kid_pos_y;
 static uint64_t g_core_clock;
+static uint32_t g_igt_ticks, g_igt_ms;
 
 /* seg001.c keeps the hall of fame's type to itself */
 #pragma pack(push, 1)
@@ -134,6 +135,8 @@ static const prop k_props[] = {
 	P("Time.Minutes Left", "Time", T_S16, rem_min, 1, NULL, "Minutes left on the game's clock (negative: no time limit)"),
 	P("Time.Ticks Left", "Time", T_U16, rem_tick, 1, NULL, "Ticks left in the current minute, 12 a second (719 down to 0)"),
 
+	P("Time.IGT Ticks", "Time", T_U32, g_igt_ticks, 0, NULL, "The in-game time: the ticks the game's clock has counted down since the game started (a minute is 719 of them; the clock stops in cutscenes, on the potions level and after Jaffar)"),
+	P("Time.IGT Ms", "Time", T_U32, g_igt_ms, 0, NULL, "The in-game time in milliseconds, 12 ticks a second (as quickerSDLPoP shows it: IGT mm:ss.mmm)"),
 	P("Time.Core Clock", "Time", T_U64, g_core_clock, 0, NULL, "The core's clock since power-on, 1,764,000 counts a second (what the steps are measured in)"),
 
 	P("Random Seed", "Random", T_U32, random_seed, 1, NULL, "The game's random number generator (seed = seed * 214013 + 2531011 at each draw)"),
@@ -220,6 +223,19 @@ void gamestate_from_game(void)
 	g_kid_pos_y = y;
 	g_core_clock = popdrv_clock();
 
+	/* The in-game time (TASVideos' IGT): what the game's clock has counted down
+	 * from the time a game starts with. show_time() takes a tick off each tick
+	 * of play and, at 0, puts 719 back and takes a minute: so a minute is 719
+	 * ticks and the count is minutes x 719 + ticks. Before any game the clock
+	 * holds nothing, and neither does the time. */
+	{
+		const int64_t start = (int64_t)custom->start_minutes_left * 719 + custom->start_ticks_left;
+		const int64_t now = (int64_t)rem_min * 719 + rem_tick;
+		const int64_t ticks = rem_min == 0 && rem_tick == 0 ? 0 : start - now;
+		g_igt_ticks = ticks > 0 ? (uint32_t)ticks : 0;
+		g_igt_ms = (uint32_t)((uint64_t)g_igt_ticks * 1000 / 12);
+	}
+
 	for (int i = 0; i < PROP_COUNT; i++)
 		memcpy(g_block + g_offset[i], k_props[i].var, k_props[i].var_size);
 
@@ -236,7 +252,7 @@ void gamestate_to_game(void)
 
 /* ------------------------------------------------------------ the table */
 
-typedef struct { char *p; size_t len, cap; } sbuf;
+typedef struct { char *p; size_t len, cap, list; } sbuf;   /* list: where the properties list begins */
 
 static void sb_add(sbuf *b, const char *fmt, ...)
 {
@@ -266,7 +282,7 @@ typedef struct
 
 static void entry(sbuf *b, const entry_t *e)
 {
-	sb_add(b, "%s\n    { \"name\": \"%s\", \"domain\": \"%s\", \"offset\": %zu, ", b->len > 20 ? "," : "",
+	sb_add(b, "%s\n    { \"name\": \"%s\", \"domain\": \"%s\", \"offset\": %zu, ", b->len > b->list ? "," : "",
 	       e->name, e->domain, e->offset);
 	if (e->length) sb_add(b, "\"type\": \"string\", \"length\": %d, \"encoding\": \"ascii\"", e->length);
 	else sb_add(b, "\"type\": \"%s\"", k_type_name[e->type]);
@@ -303,7 +319,9 @@ int gamestate_init(char *err, int errsize)
 	g_block_size = off;
 
 	sbuf b = { malloc(1 << 16), 0, 1 << 16 };
-	sb_add(&b, "{\n  \"properties\": [");
+	/* the game's own timer, for the frontend (docs/game-cores.md) */
+	sb_add(&b, "{\n  \"gameTimer\": \"Time.IGT Ms\",\n  \"properties\": [");
+	b.list = b.len;
 	for (int i = 0; i < PROP_COUNT; i++)
 	{
 		entry_t e = { k_props[i].name, "Game State", k_props[i].group, (size_t)g_offset[i], k_props[i].type,

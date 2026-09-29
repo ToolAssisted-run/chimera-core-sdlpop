@@ -60,6 +60,13 @@ local gs = dump("Game State", "gamestate.bin")
 dump("Level", "level.bin")
 if job.shot ~= nil and job.shot ~= "" then client.screenshot(job.shot) end
 
+-- the project saved where it was opened, at the movie's end: its game time
+-- headers are the machine's (docs/game-cores.md, gameTimer)
+if job.save == "1" then
+	local ok, err = pcall(function() movie.save() end)
+	meta.saved = ok and "1" or tostring(err)
+end
+
 -- the property library, where this Chimera has it (docs/game-cores.md, Lua)
 if game ~= nil and game.list ~= nil then
 	local ok, err = pcall(function()
@@ -72,6 +79,7 @@ if game ~= nil and game.list ~= nil then
 		meta.game_set = tostring(game.set("Kid.X", 120))
 		meta.game_kid_x_after_set = game.get("Kid.X")
 		meta.game_unknown = tostring(game.get("No Such Property"))
+		meta.game_igt_ms = game.get("Time.IGT Ms")
 	end)
 	if not ok then meta.game_error = tostring(err) end
 else

@@ -689,6 +689,25 @@ else
 	report "settings:player-name" FAIL "name [$(head -c 25 "$work/hof.bin" 2>/dev/null | tr -d '\0')], minutes $(at "$work/hofname.trace" 3299 2); $(grep -m1 . "$work/hofempty.txt")"
 fi
 
+# ------------------------------------------------------------------ 6g. the in-game time
+# Time.IGT Ticks counts what the game's clock counts down, and Time.IGT Ms is
+# that at 12 ticks a second (the table's gameTimer): on JaffarPlus's route,
+# with the clock poked to 3 ticks before a minute ends, it gains exactly one
+# tick a step of play through the minute's rollover (a minute is 719 ticks),
+# goes on through the level's closing music, and stands still in the
+# princess's cutscene
+wd="$(workdir igt '{"skip_title":true,"enable_copyprot":false}')"
+boxed "$wd" --frames 1100 --movie "$route" --poke "0:Random Seed=0" --poke "50:Time.Ticks Left=3" --trace "$work/igt.trace" \
+	--trace-props "Level.Current,Time.Minutes Left,Time.Ticks Left,Time.IGT Ticks,Time.IGT Ms" > /dev/null 2>&1
+igt="$(awk '$1 ~ /^[0-9]+$/ && $1 >= 51 && $1 <= 273 && $7 - p != 1 { odd++ } $1 ~ /^[0-9]+$/ && $8 != int($7 * 1000 / 12) { bad++ } { p = $7 } END { print odd + 0, bad + 0 }' "$work/igt.trace")"
+if [ "$igt" = "0 0" ] && [ "$(at "$work/igt.trace" 51 2)" = "60" ] && [ "$(at "$work/igt.trace" 53 2)" = "59" ] &&
+   [ "$(at "$work/igt.trace" 273 4)" = "940" ] && [ "$(at "$work/igt.trace" 412 4)" = "1079" ] && [ "$(at "$work/igt.trace" 1000 4)" = "1079" ] &&
+   [ "$(at "$work/igt.trace" 1099 4)" = "1174" ] && [ "$(at "$work/igt.trace" 1099 5)" = "97833" ]; then
+	report "time:igt" PASS "one tick a step through the minute's rollover (60 -> 59), 940 at the exit door, still in the cutscene, 1174 = 01:37.833 in level 2"
+else
+	report "time:igt" FAIL "off-by-a-tick steps and ms mismatches: $igt; minutes $(at "$work/igt.trace" 51 2)->$(at "$work/igt.trace" 53 2); IGT $(at "$work/igt.trace" 273 4) $(at "$work/igt.trace" 412 4) $(at "$work/igt.trace" 1000 4) $(at "$work/igt.trace" 1099 4)"
+fi
+
 # ------------------------------------------------------------------ 7. the package
 if sh "$here/build-package.sh" -m "$mb" -o "$work/pkg1" > "$work/pkg1.log" 2>&1 &&
    sh "$here/build-package.sh" -m "$mb" -o "$work/pkg2" > "$work/pkg2.log" 2>&1 &&

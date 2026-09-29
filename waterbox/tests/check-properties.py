@@ -107,7 +107,16 @@ if gaps:
 for must in ("Kid.X", "Kid.Y", "Kid.Room", "Kid.HP", "Guard.HP", "Level.Current", "Random Seed", "Time.Minutes Left"):
     if must not in names:
         sys.exit(f"missing {must}")
+# the game's own timer: one whole-number property, its elapsed time in ms
+timer = table.get("gameTimer")
+if timer is None:
+    sys.exit("no gameTimer")
+tp = next((p for p in props if p["name"] == timer), None)
+if tp is None or tp["type"] not in INT or tp.get("count", 1) != 1:
+    sys.exit(f"gameTimer names {timer!r}, which is not one whole-number property")
+if set(table) - {"properties", "gameTimer"}:
+    sys.exit(f"unknown top-level fields {sorted(set(table) - {'properties', 'gameTimer'})}")
 arrays = sum(1 for p in props if p.get("count", 1) > 1)
 print(f"{len(props)} properties ({arrays} arrays, {elements} values; "
       + ", ".join(f"{n} {k}" for k, n in sorted(kinds.items()))
-      + f") over {len(domains)} domains, no bit described twice; Game State described byte for byte ({domains['Game State']} bytes)")
+      + f") over {len(domains)} domains, no bit described twice; Game State described byte for byte ({domains['Game State']} bytes); gameTimer {timer}")

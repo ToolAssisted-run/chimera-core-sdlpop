@@ -20,8 +20,8 @@
 #     no cheat without it
 #   - start from a savestate (an SDLPoP quicksave), and enter the player's
 #     name in the hall of fame by itself
-#   - refuse a missing data file, another release's, SDLPoP's own and a
-#     damaged one
+#   - refuse a missing data file, and take a file of the project's own (a
+#     changed one, another release's, SDLPoP's own) in the original's place
 #   - package deterministically
 #
 # The data is the user's Prince of Persia, never in the repository: the gate
@@ -150,29 +150,31 @@ else
 	report "refuse:missing-file" FAIL "$(grep -m1 . "$work/r1.txt")"
 fi
 
-wd="$(workdir refuse-release '{}')"; cp "$root/extern/SDLPoP/data/DIGISND1.DAT" "$wd/DIGISND1.DAT"
-boxed "$wd" --frames 1 > "$work/r2.txt" 2>/dev/null
-if grep -q "^loadError=DIGISND1.DAT is the one SDLPoP ships, not Prince of Persia 1.0's" "$work/r2.txt"; then
-	report "refuse:sdlpop-own" PASS "SDLPoP's own DIGISND1.DAT refused by name"
-else
-	report "refuse:sdlpop-own" FAIL "$(grep -m1 . "$work/r2.txt")"
-fi
-
-# another release's file: 1.4's PRINCE.DAT in a 1.0 project, and 1.1's program
-# (whose data files are 1.0's: the program is what tells them apart)
+# a file of the project's own is taken in the original's place (Chimera pins
+# its hash; user-decided 2026-09-29): a LEVELS.DAT with room 1's tile 10 made
+# plain floor is the level the game has; SDLPoP's own DIGISND1.DAT, and - with
+# the other releases' data at hand - 1.4's PRINCE.DAT and 1.1's PRINCE.EXE in
+# a 1.0 project, are each taken
+wd="$(workdir custom-orig '{"skip_title":true}')"
+boxed "$wd" --frames 2 --trace "$work/custom-orig.trace" --trace-props "Room 1.Tile[10]" > "$work/custom-orig.txt" 2>/dev/null
+wd="$(workdir custom-levels '{"skip_title":true}')"
+python3 "$here/tests/make-levels.py" "$wd/LEVELS.DAT" "$wd/LEVELS.NEW" 1 1 10 1 && mv "$wd/LEVELS.NEW" "$wd/LEVELS.DAT"
+boxed "$wd" --frames 2 --trace "$work/custom-levels.trace" --trace-props "Room 1.Tile[10]" > "$work/custom-levels.txt" 2>/dev/null
+taken=""
+wd="$(workdir custom-sdlpop-own '{}')"; cp "$root/extern/SDLPoP/data/DIGISND1.DAT" "$wd/DIGISND1.DAT"
+boxed "$wd" --frames 30 2>/dev/null | grep -qx 'frames=30' && taken="$taken DIGISND1.DAT(SDLPoP's)"
 if [ -f "$roms/pop14/PRINCE.DAT" ] && [ -f "$roms/pop11/PRINCE.EXE" ]; then
-	wd="$(workdir refuse-other '{}')"; cp "$roms/pop14/PRINCE.DAT" "$wd/"
-	boxed "$wd" --frames 1 > "$work/r5.txt" 2>/dev/null
-	wd="$(workdir refuse-other-exe '{}')"; cp "$roms/pop11/PRINCE.EXE" "$wd/"
-	boxed "$wd" --frames 1 > "$work/r6.txt" 2>/dev/null
-	if grep -q "^loadError=PRINCE.DAT is Prince of Persia 1.3/1.4's, not 1.0's - the project plays 1.0 (the version setting)" "$work/r5.txt" &&
-	   grep -q "^loadError=PRINCE.EXE is Prince of Persia 1.1's, not 1.0's" "$work/r6.txt"; then
-		report "refuse:other-release" PASS "1.3/1.4's PRINCE.DAT and 1.1's PRINCE.EXE in a 1.0 project: each named as the release it is"
-	else
-		report "refuse:other-release" FAIL "$(grep -m1 . "$work/r5.txt") / $(grep -m1 . "$work/r6.txt")"
-	fi
+	wd="$(workdir custom-other '{}')"; cp "$roms/pop14/PRINCE.DAT" "$roms/pop11/PRINCE.EXE" "$wd/"
+	boxed "$wd" --frames 30 2>/dev/null | grep -qx 'frames=30' && taken="$taken PRINCE.DAT(1.4)+PRINCE.EXE(1.1)"
+	want=" DIGISND1.DAT(SDLPoP's) PRINCE.DAT(1.4)+PRINCE.EXE(1.1)"
 else
-	report "refuse:other-release" SKIP "no 1.1 or 1.4 data in $roms"
+	want=" DIGISND1.DAT(SDLPoP's)"
+fi
+if [ "$(at "$work/custom-levels.trace" init 1)" = "1" ] && [ "$(at "$work/custom-orig.trace" init 1)" != "1" ] &&
+   ! grep -q loadError "$work/custom-levels.txt" && [ "$taken" = "$want" ]; then
+	report "firmware:custom" PASS "a LEVELS.DAT of the project's own is the level played (room 1 tile 10: $(at "$work/custom-orig.trace" init 1) -> 1); taken:$taken"
+else
+	report "firmware:custom" FAIL "tile 10 $(at "$work/custom-orig.trace" init 1) -> $(at "$work/custom-levels.trace" init 1); taken [$taken] of [$want]; $(grep -m1 loadError "$work/custom-levels.txt")"
 fi
 wd="$(workdir refuse-version '{"version":"1.2"}')"
 boxed "$wd" --frames 1 > "$work/r7.txt" 2>/dev/null
@@ -180,14 +182,6 @@ if grep -qx "loadError=unknown version setting '1.2' (1.0, 1.1, 1.3 or 1.4)" "$w
 	report "refuse:unknown-version" PASS "a version that is none of the four is named"
 else
 	report "refuse:unknown-version" FAIL "$(grep -m1 . "$work/r7.txt")"
-fi
-
-wd="$(workdir refuse-damaged '{}')"; printf '\x55' | dd of="$wd/LEVELS.DAT" bs=1 seek=1000 conv=notrunc 2>/dev/null
-boxed "$wd" --frames 1 > "$work/r3.txt" 2>/dev/null
-if grep -q "^loadError=LEVELS.DAT is not Prince of Persia 1.0's (37031 bytes, SHA-1 " "$work/r3.txt"; then
-	report "refuse:damaged-file" PASS "one byte changed in LEVELS.DAT: refused with both hashes"
-else
-	report "refuse:damaged-file" FAIL "$(grep -m1 . "$work/r3.txt")"
 fi
 
 wd="$(workdir speaker-files '{"sound":"pcSpeaker"}')"; rm "$wd"/DIGISND*.DAT "$wd"/MIDISND*.DAT

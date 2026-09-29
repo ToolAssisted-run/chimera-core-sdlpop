@@ -20,12 +20,12 @@ patch 0003 enters the hall of fame's name from a setting.
   1.4 (the `version` setting; 1.0 by default), from the user's own files. The
   package carries none of the game's data and cannot read SDLPoP's extracted
   folders: the release's DAT files and its PRINCE.EXE are the project's
-  **firmware**, checked file by file against that release's SHA-1 at Init.
-  1.0 and 1.1 have the same data files, and so do 1.3 and 1.4; PRINCE.EXE,
-  which is only checked (SDLPoP is the program), tells each pair apart. A
-  missing file is named ("Prince of Persia 1.0 needs KID.DAT - add it as the
-  project's firmware"); another release's file is named as the release it is,
-  and a damaged one is refused with both hashes.
+  **firmware**. 1.0 and 1.1 have the same data files, and so do 1.3 and 1.4;
+  PRINCE.EXE, which is never run (SDLPoP is the program), tells each pair
+  apart. A missing file is named ("Prince of Persia 1.0 needs KID.DAT - add it
+  as the project's firmware"). A file of your own - a modified one, another
+  release's - may take an original's place: the core takes it as it is, and
+  the project pins its hash.
 - **What differs between the releases is played**: the guards fight by 1.0's
   tables in 1.0 and by the later ones in 1.1, 1.3 and 1.4 (read out of each
   PRINCE.EXE, and as CusPop gives them); 1.3 and 1.4 have the level colours

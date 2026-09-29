@@ -40,8 +40,8 @@ POP_SRCS := $(addprefix $(POP)/,$(addsuffix .c,$(POP_NAMES)))
 POP_DEFS := -DCHIMERA_CORE -D_GNU_SOURCE=1 -std=gnu99
 
 # ---- the core
-CORE_NAMES := sdlpop-driver game-state seams coroutine sha1 wbx-entry
-CORE_HDRS := chimera-hooks.h sdlpop-driver.h coroutine.h sha1.h settings.inc
+CORE_NAMES := sdlpop-driver game-state seams coroutine wbx-entry
+CORE_HDRS := chimera-hooks.h sdlpop-driver.h coroutine.h settings.inc
 
 # ---- the calls the core answers itself (seams.c)
 WRAPS := SDL_GetPerformanceCounter SDL_GetPerformanceFrequency SDL_GetTicks SDL_GetTicks64 \

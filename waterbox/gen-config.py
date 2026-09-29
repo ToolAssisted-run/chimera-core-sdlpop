@@ -104,7 +104,7 @@ def main():
         decl = {
             "id": name,
             "display": "Prince of Persia %s %s" % (which, name),
-            "description": "%s of the original Prince of Persia %s (DOS): %s. Yours to supply - the package carries none of the game's data." % (name, which, WHAT[name]),
+            "description": "%s of the original Prince of Persia %s (DOS): %s. Yours to supply - the package carries none of the game's data. A file of your own (a modified one) may take its place: the project pins its hash." % (name, which, WHAT[name]),
             "size": size,
             "sha1": sha1,
             "name": name,

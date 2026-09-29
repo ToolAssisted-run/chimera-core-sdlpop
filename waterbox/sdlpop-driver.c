@@ -38,11 +38,12 @@
  *
  * THE DATA are the user's own Prince of Persia files, of the release the
  * version setting names (1.0, 1.1, 1.3 or 1.4), mounted by name as the
- * project's firmware. Init checks each one the game will open by SHA-1, and
- * the release's PRINCE.EXE, which the game never runs but which is what tells
- * 1.0 from 1.1 and 1.3 from 1.4 (their data files are the same); it refuses a
- * missing file or one of another release by name. The game can open nothing
- * else (seams.c), so it cannot fall back to SDLPoP's extracted folders.
+ * project's firmware: each one the game will open, and the release's
+ * PRINCE.EXE, which the game never runs but which tells 1.0 from 1.1 and 1.3
+ * from 1.4 (their data files are the same). Init names a missing file; a file
+ * of the project's own in an original's place is taken as it is (the project
+ * pins its hash). The game can open nothing else (seams.c), so it cannot fall
+ * back to SDLPoP's extracted folders.
  *
  * THE RELEASE is more than its files. What differs in the program, SDLPoP
  * already knows how to be told, and the core tells it (build_ini, and patch
@@ -66,7 +67,6 @@
 
 #include "coroutine.h"
 #include "sdlpop-driver.h"
-#include "sha1.h"
 
 /* seg009.c's timer state */
 extern Uint64 timer_last_counter[];
@@ -92,9 +92,11 @@ typedef struct
 } pop_file;
 
 /* Prince of Persia (DOS), file by file, for each release: the user's own
- * copies of the four, hashed. 1.0 and 1.1 have the same data files, and so do
- * 1.3 and 1.4 (the 1.4 CD's); PRINCE.EXE is each release's own and is only
- * checked - SDLPoP is the program. The digitized sounds and the AdLib music
+ * copies of the four. The hashes are the originals', which the declarations
+ * give the frontend to find them by; a file of the project's own is taken in
+ * their place (check_files). 1.0 and 1.1 have the same data files, and so do
+ * 1.3 and 1.4 (the 1.4 CD's); PRINCE.EXE is each release's own and is never
+ * run - SDLPoP is the program. The digitized sounds and the AdLib music
  * are needed only with the Sound Blaster; the PC speaker's are always opened,
  * as SDLPoP opens them whatever the sound card. The levels are the original
  * ones unless the project brings a level set of its own. */
@@ -136,12 +138,6 @@ static const pop_file k_files[] = {
 	{ "PRINCE.EXE", V14, 110855, "4D257E60684DAFFA4D0BF78DE876113CDC34064E", NEED_CHECK_ONLY },
 };
 #define POP_FILE_COUNT ((int)(sizeof k_files / sizeof k_files[0]))
-
-/* A file known to be something else under the same name: SDLPoP's repository
- * ships this sound file, which is no release's. */
-static const struct { const char *sha1; const char *what; } k_other[] = {
-	{ "9E1464DAC4078B1754DB25E0DC3A9CD245DE8FE4", "the one SDLPoP ships" },
-};
 
 /* ------------------------------------------------------------- the releases */
 
@@ -660,22 +656,14 @@ static void build_ini(void)
 
 /* ------------------------------------------------------------------ Init */
 
-/* the releases a mask names, as "1.0", "1.0/1.1" */
-static const char *release_names(int mask, char *buf, size_t size)
-{
-	buf[0] = '\0';
-	for (int r = 0; r < POP_RELEASE_COUNT; r++)
-	{
-		if (!(mask & k_releases[r].mask)) continue;
-		size_t len = strlen(buf);
-		snprintf(buf + len, size - len, "%s%s", len ? "/" : "", k_releases[r].name);
-	}
-	return buf;
-}
-
+/* Every file the release and the settings call for is there. What is in it
+ * is the project's: a file of its own (a modified one, another release's, the
+ * one SDLPoP ships) is taken as it is, and Chimera pins ITS hash in the
+ * project (user-decided, 2026-09-29: a game core's firmware may be custom).
+ * A missing one is named, all of them at once. */
 static int check_files(char *err, int errsize)
 {
-	char missing[512] = "", wrong[1024] = "";
+	char missing[512] = "";
 	int nmissing = 0;
 	const char *rel = g.release->name;
 	for (int i = 0; i < POP_FILE_COUNT; i++)
@@ -685,46 +673,19 @@ static int check_files(char *err, int errsize)
 		if (pf->need == NEED_DIGITAL && !g.digital_sound) continue;
 		if (pf->need == NEED_ORIGINAL_LEVELS && custom_levels()) continue;
 		FILE *f = __real_fopen(pf->name, "rb");
-		if (!f)
+		if (f)
 		{
-			size_t len = strlen(missing);
-			snprintf(missing + len, sizeof missing - len, "%s%s", nmissing ? ", " : "", pf->name);
-			nmissing++;
+			fclose(f);
 			continue;
 		}
-		char hex[41];
-		long size = 0;
-		int ok = sha1_file(f, hex, &size);
-		fclose(f);
-		if (ok && !strcmp(hex, pf->sha1)) continue;
-		if (wrong[0]) continue; /* the first is enough to say what is wrong */
-		/* another release's file, or something else known by that name */
-		int other = 0;
-		for (int k = 0; ok && k < POP_FILE_COUNT; k++)
-			if (!strcmp(k_files[k].name, pf->name) && !strcmp(k_files[k].sha1, hex)) other |= k_files[k].releases;
-		const char *what = NULL;
-		for (size_t k = 0; ok && k < sizeof k_other / sizeof k_other[0]; k++)
-			if (!strcmp(hex, k_other[k].sha1)) what = k_other[k].what;
-		char names[32];
-		if (other)
-			snprintf(wrong, sizeof wrong, "%s is Prince of Persia %s's, not %s's - the project plays %s (the version setting). Add %s's %s, or set the version to the release your files are.",
-			         pf->name, release_names(other, names, sizeof names), rel, rel, rel, pf->name);
-		else if (what)
-			snprintf(wrong, sizeof wrong, "%s is %s, not Prince of Persia %s's - this core plays the release's own data and checks it file by file. Add %s's %s.",
-			         pf->name, what, rel, rel, pf->name);
-		else
-			snprintf(wrong, sizeof wrong, "%s is not Prince of Persia %s's (%ld bytes, SHA-1 %s; %s's is %ld bytes, %s) - this core plays the release's own data and checks it file by file. Add %s's %s.",
-			         pf->name, rel, size, ok ? hex : "unreadable", rel, pf->size, pf->sha1, rel, pf->name);
+		size_t len = strlen(missing);
+		snprintf(missing + len, sizeof missing - len, "%s%s", nmissing ? ", " : "", pf->name);
+		nmissing++;
 	}
 	if (nmissing)
 	{
 		snprintf(err, (size_t)errsize, "Prince of Persia %s needs %s - add %s as the project's firmware.",
 		         rel, missing, nmissing > 1 ? "them" : "it");
-		return 0;
-	}
-	if (wrong[0])
-	{
-		snprintf(err, (size_t)errsize, "%s", wrong);
 		return 0;
 	}
 	return 1;

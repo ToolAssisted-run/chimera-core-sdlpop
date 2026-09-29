@@ -6,9 +6,9 @@
  * core's clock, and every memory domain.
  *
  * Input is a movie: one line per step, the buttons held on that step as
- * letters (U D L R S = Shift, E = Enter, A = Restart Level, anything else
- * ignored), or JaffarPlus's |r|LRUDS| rows; a line starting with # is a
- * comment. --movie-at puts its first line at
+ * letters (gate_key_index: U D L R S = Shift, E = Enter, A = Restart Level,
+ * then the commands and the cheats; anything else ignored), or JaffarPlus's
+ * |r|LRUDS| rows; a line starting with # is a comment. --movie-at puts its first line at
  * a given step; --press adds a key held for a stretch of steps.
  *
  * Properties are reached the way the frontend reaches them: through the table
@@ -55,6 +55,8 @@ struct gate_core
 	void (*set_rendering)(int on);  /* optional (the turbo leg) */
 	uint64_t (*clock)(void);
 	const char *(*game_properties)(void);
+	int (*button_active)(int32_t index);         /* optional: IsButtonActive */
+	int (*write_quicksave)(const char *path);    /* optional: run-native's */
 };
 
 #define GATE_MAX_PRESS 64
@@ -84,6 +86,8 @@ struct gate_opts
 	const char *audioOut;
 	int turbo;
 	long turboSettle;
+	long quicksaveAt;        /* after that step, SDLPoP's quicksave of the game to quicksavePath */
+	const char *quicksavePath;
 };
 
 static uint64_t gate_fnv(uint64_t h, const void *p, size_t n)
@@ -107,6 +111,34 @@ static int gate_key_index(char c)
 	case 'S': return POP_BTN_SHIFT;
 	case 'E': return POP_BTN_ENTER;
 	case 'A': case 'r': return POP_BTN_RESTART_LEVEL;
+	/* the commands */
+	case 'P': return POP_BTN_PAUSE;
+	case 'T': return POP_BTN_SHOW_TIME;
+	case 'G': return POP_BTN_RESTART_GAME;
+	case 'N': return POP_BTN_NEXT_LEVEL;
+	case 's': return POP_BTN_SAVE_GAME;
+	case 'l': return POP_BTN_LOAD_GAME;
+	case 'o': return POP_BTN_SOUND_ON_OFF;
+	case 'v': return POP_BTN_VERSION;
+	case 'j': return POP_BTN_JOYSTICK_MODE;
+	case 'k': return POP_BTN_KEYBOARD_MODE;
+	/* the cheats */
+	case 'c': return POP_BTN_CHEAT_SHOW_ROOMS;
+	case 'C': return POP_BTN_CHEAT_SHOW_CORNER_ROOMS;
+	case '-': return POP_BTN_CHEAT_LESS_TIME;
+	case '+': return POP_BTN_CHEAT_MORE_TIME;
+	case 'V': return POP_BTN_CHEAT_REVIVE;
+	case 'K': return POP_BTN_CHEAT_KILL_GUARD;
+	case 'I': return POP_BTN_CHEAT_FLIP_SCREEN;
+	case 'W': return POP_BTN_CHEAT_FEATHER_FALL;
+	case '4': return POP_BTN_CHEAT_LOOK_LEFT;
+	case '6': return POP_BTN_CHEAT_LOOK_RIGHT;
+	case '8': return POP_BTN_CHEAT_LOOK_UP;
+	case '2': return POP_BTN_CHEAT_LOOK_DOWN;
+	case '5': return POP_BTN_CHEAT_LOOK_BACK;
+	case 'B': return POP_BTN_CHEAT_BLIND_MODE;
+	case 'H': return POP_BTN_CHEAT_ADD_HIT_POINT;
+	case 'M': return POP_BTN_CHEAT_ADD_MAX_HIT_POINT;
 	default: return -1;
 	}
 }
@@ -254,6 +286,13 @@ static int gate_run(const struct gate_core *c, const struct gate_opts *o)
 		printf("loadError=%s\n", c->load_error ? c->load_error() : "?");
 		return 1;
 	}
+	if (c->button_active)
+	{
+		/* the buttons the core says do something, as the frontend asks */
+		int n = 0;
+		for (int i = 0; i < GATE_BTN_COUNT; i++) n += c->button_active(i) ? 1 : 0;
+		printf("activeButtons=%d\n", n);
+	}
 	if (o->moviePath && !gate_load_movie(o->moviePath))
 		return 1;
 	if (o->propsJson)
@@ -367,6 +406,14 @@ static int gate_run(const struct gate_core *c, const struct gate_opts *o)
 		for (int i = 0; i < o->nshots; i++)
 			if (o->shots[i].at == f)
 				gate_write_tga(o->shots[i].path, video, w, h);
+		if (o->quicksavePath && f == o->quicksaveAt)
+		{
+			if (!c->write_quicksave || !c->write_quicksave(o->quicksavePath))
+			{
+				fprintf(stderr, "no quicksave written at step %ld\n", f);
+				return 1;
+			}
+		}
 	}
 	if (trace) fclose(trace);
 
@@ -446,6 +493,16 @@ static int gate_parse_opts(int argc, char **argv, int first, struct gate_opts *o
 		else if (!strcmp(argv[i], "--props-json") && i + 1 < argc) o->propsJson = argv[++i];
 		else if (!strcmp(argv[i], "--dump-domain") && i + 2 < argc) { o->dumpDomain = argv[++i]; o->dumpPath = argv[++i]; }
 		else if (!strcmp(argv[i], "--audio") && i + 1 < argc) o->audioOut = argv[++i];
+		else if (!strcmp(argv[i], "--quicksave") && i + 1 < argc)
+		{
+			/* STEP:PATH (run-native only) */
+			char *arg = argv[++i];
+			char *colon = strchr(arg, ':');
+			if (!colon) { fprintf(stderr, "bad --quicksave %s\n", arg); return 0; }
+			*colon = 0;
+			o->quicksaveAt = strtol(arg, 0, 0);
+			o->quicksavePath = colon + 1;
+		}
 		else if (!strcmp(argv[i], "--turbo")) o->turbo = 1;
 		else if (!strcmp(argv[i], "--turbo-settle") && i + 1 < argc) o->turboSettle = strtol(argv[++i], 0, 0);
 		else if (!strcmp(argv[i], "--rerecord") || !strcmp(argv[i], "--session")) ; /* run-wbx's */

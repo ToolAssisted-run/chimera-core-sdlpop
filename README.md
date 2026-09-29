@@ -6,41 +6,68 @@ core**: the game itself, stepped one game step at a time in miniBox's sandbox,
 packaged as `sdlpop.chimeraCore`. It is the first core of its kind
 (`"kind": "game"`, see Chimera's `docs/game-cores.md`).
 
-**Built on upstream, unmodified but for seven one-line hooks.** SDLPoP and
-SDL 2 are submodules, compiled from source into the core; the patch series
-adds one call at each place the DOS game waited without saying for how long or
-looked at the controls, and nothing else. The game runs on a stack of its own and hands
-control back where it would have waited.
+**Built on upstream, with two small patches.** SDLPoP and SDL 2 are
+submodules, compiled from source into the core. Patch 0001 adds one call at
+each place the DOS game waited without saying for how long or looked at the
+controls; the game runs on a stack of its own and hands control back where it
+would have waited. Patch 0002 lets the core give the game its release's copy
+protection (each release's manual asks other words) and its own Ctrl+V line.
 
 ## What it is
 
-- **Prince of Persia 1.0 (DOS)**, from the user's own data files. The package
-  carries none of the game's data and cannot read SDLPoP's extracted folders:
-  the 21 original DAT files are the project's **firmware**, checked file by
-  file against 1.0's SHA-1 at Init. A missing one is named ("Prince of Persia
-  needs KID.DAT - add it as the project's firmware"); a file of another release
-  or a damaged one is refused by name.
+- **Prince of Persia (DOS), the release the project names**: 1.0, 1.1, 1.3 or
+  1.4 (the `version` setting; 1.0 by default), from the user's own files. The
+  package carries none of the game's data and cannot read SDLPoP's extracted
+  folders: the release's DAT files and its PRINCE.EXE are the project's
+  **firmware**, checked file by file against that release's SHA-1 at Init.
+  1.0 and 1.1 have the same data files, and so do 1.3 and 1.4; PRINCE.EXE,
+  which is only checked (SDLPoP is the program), tells each pair apart. A
+  missing file is named ("Prince of Persia 1.0 needs KID.DAT - add it as the
+  project's firmware"); another release's file is named as the release it is,
+  and a damaged one is refused with both hashes.
+- **What differs between the releases is played**: the guards fight by 1.0's
+  tables in 1.0 and by the later ones in 1.1, 1.3 and 1.4 (read out of each
+  PRINCE.EXE, and as CusPop gives them); 1.3 and 1.4 have the level colours
+  (level 3's dungeon green, not blue); the copy protection asks from 1.0's,
+  1.1's or 1.3/1.4's manual; Ctrl+V shows the release's own line. Of
+  everything SDLPoP can read from a DOS PRINCE.EXE, nothing else differs.
 - **A frame is one step of the game**: a tick of play (1/12 s walking, 1/10 s
   fighting), each 1/60 s of the title, the cutscenes and a pause (which poll
   the controls that often), and a dark 1/10 s step when the prince changes
   rooms, as the original does. `GetVsyncNumerator/Denominator` report the step
   just run; a step that did not read the controls is a lag frame.
-- **The controls are the game's**: Up, Down, Left, Right, Shift, Enter and
-  Restart Level (Ctrl+A), delivered to SDLPoP as the key events a keyboard
-  would send.
-- **Properties**: 183 properties in `GetGameProperties` (JaffarPlus's list,
-  and more): the prince and the guard, the level, the clock, the random seed
-  in a packed `Game State` block, copied out after each step and back before
-  the next (so pokes and freezes work); the level's rooms, tiles, links,
-  guards and button events, the falling floors, the tile animations and the
-  hall of fame in place, as further domains, described as arrays and bit
-  fields.
-- **Settings** that change play, recorded in the project: the sound card, the
-  random seed, copy protection (on, as in 1.0), the first level, the minutes,
-  the hit points, skipping the title, and SDLPoP's fixes and enhancements
-  (off, with each one's own switch). Defaults are the original game.
-- **A custom level set** is the one file a project may add: a LEVELS.DAT
-  played in place of the original levels.
+- **The controls are the game's keyboard**, each key its own button, delivered
+  to SDLPoP as the key events a keyboard would send (a Ctrl or Shift command
+  holds its modifier as a key does): Up, Down, Left, Right, Shift and Enter;
+  the commands - Pause (Esc), Show Time (Space), Restart Level (Ctrl+A),
+  Restart Game (Ctrl+R), Next Level (Shift+L), Save Game (Ctrl+G), Load Game
+  (Ctrl+L), Sound On/Off (Ctrl+S), Version (Ctrl+V), Joystick Mode (Ctrl+J)
+  and Keyboard Mode (Ctrl+K); Ctrl+Q is left out, as it ends the program.
+- **Cheats**, with the `cheats` setting (off by default): the game starts with
+  its cheat word, as from the DOS command line, and 16 more buttons exist -
+  Show Rooms, Show Corner Rooms, Less Time, More Time, Revive, Kill Guard,
+  Flip Screen, Feather Fall, Look Left/Right/Up/Down, Look Back, Blind Mode,
+  Add Hit Point and Add Max Hit Point. Without the setting they are not
+  buttons at all (`IsButtonActive`).
+- **Properties**: 191 in `GetGameProperties` (JaffarPlus's list, and more): the
+  prince and the guard, the level, the clock, the random seed in a packed
+  `Game State` block, copied out after each step and back before the next (so
+  pokes and freezes work); the level's rooms, tiles, links, guards and button
+  events, the falling floors, the tile animations, the hall of fame, and the
+  guards' fighting tables and level colours the game plays by, in place, as
+  further domains, described as arrays and bit fields.
+- **Settings** that change play, recorded in the project: the version, the
+  cheats, the sound card, the random seed, copy protection (on, as in the
+  original), the first level, the minutes, the hit points, skipping the title,
+  and SDLPoP's fixes and enhancements. **Defaults are the original game**:
+  every fix and enhancement is off, each one's own switch as well as the
+  master switch.
+- **Files a project may add**: a custom level set (a LEVELS.DAT played in
+  place of the original levels); a saved game of the original's own
+  (PRINCE.SAV, which Load Game on the title resumes); and a **savestate** - an
+  SDLPoP quicksave (QUICKSAVE.SAV) the run starts from. The files the game
+  writes itself (its saved game, its hall of fame) live in guest memory, so a
+  savestate carries them.
 
 ## Building
 
@@ -65,8 +92,10 @@ The frontend gate uses a built Chimera checkout (`--chimera-root`, else
 `../chimera` or `~/chimera`) and writes nothing into it: its config, data
 home and Base path are all in `build/frontend`.
 
-The data is the user's: put Prince of Persia 1.0's DAT files in
-`tests/roms-local/pop10` (gitignored), or pass `-d`. Without it only the
-build, the declarations and the no-data refusal run.
+The data is the user's: put each release's files (its DAT files and
+PRINCE.EXE) in `tests/roms-local/pop10`, `pop11`, `pop13` and `pop14`
+(gitignored), or pass `-d` with the folder holding them. Without 1.0's only
+the build, the declarations and the no-data refusal run; without the others
+the releases' legs are skipped.
 
 Status, decisions and what is open: `docs/PLAN.md`.

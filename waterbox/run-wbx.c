@@ -69,6 +69,8 @@ static intfn g_GetVsyncNumerator, g_GetVsyncDenominator;
 static u64fn g_GetCycleCount;
 static voidfn_i g_SetRenderingEnabled;
 static ptrfn g_GetGameProperties;
+typedef int (MB_GUEST_ABI *intfn_i32)(int32_t);
+static intfn_i32 g_IsButtonActive;
 static int g_rerecord;
 static int g_session;
 static long g_sessionAt = -1;
@@ -113,6 +115,7 @@ static int core_vsync_numerator(void) { return g_GetVsyncNumerator(); }
 static int core_vsync_denominator(void) { return g_GetVsyncDenominator(); }
 static uint64_t core_clock(void) { return g_GetCycleCount(); }
 static const char *core_game_properties(void) { return (const char *)g_GetGameProperties(); }
+static int core_button_active(int32_t i) { return g_IsButtonActive(i); }
 
 static void core_pre_frame(long frame)
 {
@@ -215,6 +218,7 @@ static void resolve_exports(void)
 	g_GetVsyncDenominator = (intfn)proc(g_host, "GetVsyncDenominator");
 	g_GetCycleCount = (u64fn)proc(g_host, "GetCycleCount");
 	g_GetGameProperties = (ptrfn)proc(g_host, "GetGameProperties");
+	g_IsButtonActive = (intfn_i32)proc(g_host, "IsButtonActive");
 }
 
 int main(int argc, char **argv)
@@ -259,6 +263,7 @@ int main(int argc, char **argv)
 		.set_rendering = core_set_rendering,
 		.clock = core_clock,
 		.game_properties = core_game_properties,
+		.button_active = core_button_active,
 	};
 
 	/* Init runs before Seal - the loaded machine is the sealed baseline */

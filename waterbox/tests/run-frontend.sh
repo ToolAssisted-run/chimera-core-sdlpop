@@ -70,14 +70,18 @@ else
 fi
 pkg="$work/pkg/sdlpop.chimeraCore"
 
-# the data files, as --firmware id=path, and as a work dir for the reference
+# the data files, as --firmware id=path, and as a work dir for the reference:
+# the ones the package declares for 1.0 (its PRINCE.EXE too; not the CGA and
+# EGA files the release also has)
 firmware=()
 mkdir -p "$work/native"
-for f in "$data"/*.DAT; do
-	b="$(basename "$f")"
-	case "$b" in CONFIG.DAT|SETUP.DAT) continue ;; esac
-	firmware+=("$b=$f")
-	cp "$f" "$work/native/"
+for b in $(python3 -c "
+import json, zipfile
+cfg = json.loads(zipfile.ZipFile('$pkg').read('waterbox.config'))
+print(' '.join(sorted({f['name'] for f in cfg['firmware'] if '1.0' in json.dumps(f.get('requiredWhen', {}))})))"); do
+	[ -f "$data/$b" ] || continue
+	firmware+=("$b=$data/$b")
+	cp "$data/$b" "$work/native/"
 done
 settings='{"skip_title":true,"enable_copyprot":false}'
 printf '%s' "$settings" > "$work/native/settings"
@@ -190,6 +194,24 @@ else
 	report "gui:project" FAIL "status $(meta gui status) $(meta gui detail) (build/frontend/gui.log)"
 fi
 
+# with the cheats setting the project has the cheats' 16 columns as well (33),
+# and one of them pressed - More Time on row 50 - reaches the game: the route
+# ends with 61 minutes, as the reference pressing the same key does
+mkdir -p "$work/nativecheats"; cp "$work/native/"* "$work/nativecheats/"
+csettings='{"skip_title":true,"enable_copyprot":false,"cheats":true}'
+printf '%s' "$csettings" > "$work/nativecheats/settings"
+"$rn" "$work/nativecheats" --frames "$frames" --movie "$route" --press 50:+:1 --dump-domain "Game State" "$work/cheats.gs.bin" > /dev/null 2>&1
+python3 "$here/make-project.py" "$pkg" "$work/cheats.chimeraProject" "$frames" --movie "$route" \
+	--settings "$csettings" --press "50:Cheat More Time"
+gui cheatsgui "$config" "$work/cheats.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
+ncols="$(python3 -c "import json; p = json.load(open('$work/cheats.chimeraProject')); print(p['input'].splitlines()[1].count('|'))")"
+if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "33" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
+   ! cmp -s "$work/native.gs.bin" "$work/cheats.gs.bin"; then
+	report "gui:cheats-project" PASS "a project with the cheats on ($ncols columns): More Time on row 50 reaches the game, Game State is the reference's"
+else
+	report "gui:cheats-project" FAIL "status $(meta cheatsgui status) $(meta cheatsgui detail), $ncols columns (build/frontend/cheatsgui.log)"
+fi
+
 # the property library, where this Chimera has it: the table is the one the
 # core exports, a value read by name is the byte in the domain, a bit field
 # element reads, a set takes, and a name the core does not have is nil
@@ -205,7 +227,7 @@ else
 fi
 
 # the core's own refusal reaches the frontend: a project that pins no data
-# (so Chimera itself asks nothing) given SDLPoP's later-release DIGISND1.DAT
+# (so Chimera itself asks nothing) given SDLPoP's own DIGISND1.DAT
 python3 - "$work/gui.chimeraProject" "$work/nopins.chimeraProject" <<'EOF'
 import json, sys
 p = json.load(open(sys.argv[1]))
@@ -214,7 +236,7 @@ json.dump(p, open(sys.argv[2], "w"), indent="\t")
 EOF
 bad=(); for f in "${firmware[@]}"; do case "$f" in DIGISND1.DAT=*) bad+=("DIGISND1.DAT=$root/extern/SDLPoP/data/DIGISND1.DAT") ;; *) bad+=("$f") ;; esac; done
 code="$(gui refuse "$config" "$work/nopins.chimeraProject" 10 "${bad[@]}")"
-if [ "$code" = "64" ] && grep -q "DIGISND1.DAT is a later release's (as SDLPoP ships it), not Prince of Persia 1.0's" "$work/refuse.log"; then
+if [ "$code" = "64" ] && grep -q "DIGISND1.DAT is the one SDLPoP ships, not Prince of Persia 1.0's" "$work/refuse.log"; then
 	report "gui:refusal" PASS "the core's load error is what Chimera shows (headless: exit 64 with the text)"
 else
 	report "gui:refusal" FAIL "exit $code; $(grep -m1 -i 'DIGISND1\|error' "$work/refuse.log" | cut -c1-100)"

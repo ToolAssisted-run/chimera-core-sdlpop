@@ -33,6 +33,28 @@ extern int64_t GetMemoryDomainSize(int i);
 extern uint64_t GetCycleCount(void);
 extern const char *GetGameProperties(void);
 
+extern int IsButtonActive(int32_t index);
+
+/* SDLPoP's own quicksave (F6), taken between two steps: the game writes it
+ * through the core's in-memory files, and it is copied out from there. This
+ * is how the gate makes a savestate for the "savestate" slot without a
+ * second SDLPoP. */
+int quick_save(void);
+void *popdrv_save_file_open(const char *path, const char *mode, int *handled);
+static int write_quicksave(const char *path)
+{
+	if (!quick_save()) return 0;
+	int handled = 0;
+	FILE *in = (FILE *)popdrv_save_file_open("saves/QUICKSAVE.SAV", "rb", &handled);
+	FILE *out = in ? __real_fopen(path, "wb") : NULL;
+	if (!out) { if (in) fclose(in); return 0; }
+	int ch;
+	while ((ch = fgetc(in)) != EOF) fputc(ch, out);
+	fclose(in);
+	fclose(out);
+	return 1;
+}
+
 static void frame(void) { FrameAdvance(0); }
 static const uint32_t *video(int *w, int *h)
 {
@@ -80,6 +102,8 @@ int main(int argc, char **argv)
 		.set_rendering = SetRenderingEnabled,
 		.clock = GetCycleCount,
 		.game_properties = GetGameProperties,
+		.button_active = IsButtonActive,
+		.write_quicksave = write_quicksave,
 	};
 	return gate_run(&c, &o);
 }

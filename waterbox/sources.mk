@@ -48,7 +48,7 @@ WRAPS := SDL_GetPerformanceCounter SDL_GetPerformanceFrequency SDL_GetTicks SDL_
 	SDL_Delay SDL_AddTimer SDL_RemoveTimer time SDL_Init SDL_InitSubSystem SDL_OpenAudio \
 	SDL_CloseAudio SDL_PauseAudio SDL_LockAudio SDL_UnlockAudio SDL_GetAudioStatus \
 	SDL_UpdateTexture SDL_RenderClear SDL_RenderCopy SDL_RenderPresent fopen access stat \
-	opendir mkdir exit SDL_PollEvent
+	opendir mkdir exit SDL_PollEvent getenv SDL_GetKeyboardState
 WRAP_FLAGS := $(foreach w,$(WRAPS),-Wl,--wrap=$(w))
 
 # the patch series goes onto the submodule before anything of SDLPoP builds

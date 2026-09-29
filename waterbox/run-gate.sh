@@ -12,32 +12,41 @@
 #     at 60 Hz, a room change adds a dark 1/10 s step) and report lag honestly
 #   - export a property table that holds to docs/game-cores.md, read the
 #     same through it natively and sandboxed, obey a poke and hold a freeze
-#   - take its settings (a first level, the minutes, the hit points arrive)
-#   - refuse a missing data file, a later release's file and a damaged one
+#   - take its settings (a first level, the minutes, the hit points arrive),
+#     with every fix and enhancement off unless asked for
+#   - be each release it is told to be (1.0, 1.1, 1.3, 1.4): its files, its
+#     level colours, its guards' tables, its copy protection and its Ctrl+V
+#   - obey every command key and, with the cheats setting, every cheat - and
+#     no cheat without it
+#   - start from a savestate (an SDLPoP quicksave) and resume a saved game
+#   - refuse a missing data file, another release's, SDLPoP's own and a
+#     damaged one
 #   - package deterministically
 #
-# The data is the user's Prince of Persia 1.0, never in the repository: the
-# gate takes it from tests/roms-local/pop10 (or -d <dir>). Without it only the
-# build, the declarations and the refusal of a project with no data run.
+# The data is the user's Prince of Persia, never in the repository: the gate
+# takes each release from tests/roms-local/pop10, pop11, pop13 and pop14 (or
+# -d <dir holding those>). Without 1.0's only the build, the declarations and
+# the refusal of a project with no data run.
 #
-# Usage: ./run-gate.sh [-q] [-m <miniBox dir>] [-d <PoP 1.0 dir>]
+# Usage: ./run-gate.sh [-q] [-m <miniBox dir>] [-d <dir with pop10 pop11 pop13 pop14>]
 #   -q skips the build (uses what is built)
 set -u
 
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/.." && pwd)"
 mb="${MINIBOX_DIR:-$HOME/chimera/extern/chimera-common-minibox}"
-data="${POP10_DIR:-$root/tests/roms-local/pop10}"
+roms="${POP_DIR:-$root/tests/roms-local}"
 quick=0
 while getopts "qm:d:" opt; do
 	case "$opt" in
 		q) quick=1 ;;
 		m) mb="$OPTARG" ;;
-		d) data="$OPTARG" ;;
+		d) roms="$OPTARG" ;;
 		*) exit 2 ;;
 	esac
 done
 mb="$(cd "$mb" 2>/dev/null && pwd)" || { echo "miniBox not found; pass -m or set MINIBOX_DIR" >&2; exit 1; }
+data="$roms/pop10"
 
 nat="$root/build/native"
 wbx="$root/build/guest/core.wbx"
@@ -91,20 +100,34 @@ else
 	report "wire:config==driver" FAIL "$(tail -1 "$work/wire.txt")"
 fi
 
-# a work dir: the data files the project would mount, and a settings file
+# a work dir: the data files the project would mount (the release's: 1.0's
+# unless a third argument names another's folder), and a settings file
 workdir() {
-	local wd="$work/$1"
+	local wd="$work/$1" src="${3:-$data}"
 	mkdir -p "$wd"
-	cp "$data"/*.DAT "$wd/" 2>/dev/null
+	cp "$src"/*.DAT "$src/PRINCE.EXE" "$wd/" 2>/dev/null
 	rm -f "$wd/CONFIG.DAT" "$wd/SETUP.DAT"
 	printf '%s' "$2" > "$wd/settings"
 	echo "$wd"
+}
+# a picture's pixels, and its colour: how much bluer than green its top half is
+tgapixels() { tail -c +19 "$1" 2>/dev/null | sha1sum | cut -c1-16; }
+bluer() {
+	python3 - "$1" <<'PYEOF'
+import sys
+d = open(sys.argv[1], "rb").read()[18:]
+w, h = 320, 200
+b = g = 0
+for i in range(0, w * h // 2 * 4, 4):
+    b += d[i]; g += d[i + 1]
+print(b - g)
+PYEOF
 }
 
 # ------------------------------------------------------------------ 3. no data
 wd="$work/nodata"; mkdir -p "$wd"; printf '{}' > "$wd/settings"
 boxed "$wd" --frames 1 > "$work/nodata.txt" 2>/dev/null
-if grep -q '^loadError=Prince of Persia needs PRINCE.DAT, KID.DAT, .*MIDISND2.DAT - add them as the project.s firmware' "$work/nodata.txt"; then
+if grep -q '^loadError=Prince of Persia 1.0 needs PRINCE.DAT, KID.DAT, .*MIDISND2.DAT, PRINCE.EXE - add them as the project.s firmware' "$work/nodata.txt"; then
 	report "refuse:no-data" PASS "every file named: $(sed -n 's/^loadError=//p' "$work/nodata.txt" | cut -c1-60)..."
 else
 	report "refuse:no-data" FAIL "$(head -1 "$work/nodata.txt")"
@@ -120,7 +143,7 @@ fi
 wd="$(workdir refuse-missing '{}')"; rm "$wd/KID.DAT"
 boxed "$wd" --frames 1 > "$work/r1.txt" 2>/dev/null
 native "$wd" --frames 1 > "$work/r1n.txt" 2>/dev/null
-if grep -qx 'loadError=Prince of Persia needs KID.DAT - add it as the project.s firmware.' "$work/r1.txt" && cmp -s <(grep loadError "$work/r1.txt") <(grep loadError "$work/r1n.txt"); then
+if grep -qx 'loadError=Prince of Persia 1.0 needs KID.DAT - add it as the project.s firmware.' "$work/r1.txt" && cmp -s <(grep loadError "$work/r1.txt") <(grep loadError "$work/r1n.txt"); then
 	report "refuse:missing-file" PASS "$(sed -n 's/^loadError=//p' "$work/r1.txt")"
 else
 	report "refuse:missing-file" FAIL "$(grep -m1 . "$work/r1.txt")"
@@ -128,10 +151,34 @@ fi
 
 wd="$(workdir refuse-release '{}')"; cp "$root/extern/SDLPoP/data/DIGISND1.DAT" "$wd/DIGISND1.DAT"
 boxed "$wd" --frames 1 > "$work/r2.txt" 2>/dev/null
-if grep -q "^loadError=DIGISND1.DAT is a later release's (as SDLPoP ships it), not Prince of Persia 1.0's" "$work/r2.txt"; then
-	report "refuse:later-release" PASS "SDLPoP's own DIGISND1.DAT refused by name"
+if grep -q "^loadError=DIGISND1.DAT is the one SDLPoP ships, not Prince of Persia 1.0's" "$work/r2.txt"; then
+	report "refuse:sdlpop-own" PASS "SDLPoP's own DIGISND1.DAT refused by name"
 else
-	report "refuse:later-release" FAIL "$(grep -m1 . "$work/r2.txt")"
+	report "refuse:sdlpop-own" FAIL "$(grep -m1 . "$work/r2.txt")"
+fi
+
+# another release's file: 1.4's PRINCE.DAT in a 1.0 project, and 1.1's program
+# (whose data files are 1.0's: the program is what tells them apart)
+if [ -f "$roms/pop14/PRINCE.DAT" ] && [ -f "$roms/pop11/PRINCE.EXE" ]; then
+	wd="$(workdir refuse-other '{}')"; cp "$roms/pop14/PRINCE.DAT" "$wd/"
+	boxed "$wd" --frames 1 > "$work/r5.txt" 2>/dev/null
+	wd="$(workdir refuse-other-exe '{}')"; cp "$roms/pop11/PRINCE.EXE" "$wd/"
+	boxed "$wd" --frames 1 > "$work/r6.txt" 2>/dev/null
+	if grep -q "^loadError=PRINCE.DAT is Prince of Persia 1.3/1.4's, not 1.0's - the project plays 1.0 (the version setting)" "$work/r5.txt" &&
+	   grep -q "^loadError=PRINCE.EXE is Prince of Persia 1.1's, not 1.0's" "$work/r6.txt"; then
+		report "refuse:other-release" PASS "1.3/1.4's PRINCE.DAT and 1.1's PRINCE.EXE in a 1.0 project: each named as the release it is"
+	else
+		report "refuse:other-release" FAIL "$(grep -m1 . "$work/r5.txt") / $(grep -m1 . "$work/r6.txt")"
+	fi
+else
+	report "refuse:other-release" SKIP "no 1.1 or 1.4 data in $roms"
+fi
+wd="$(workdir refuse-version '{"version":"1.2"}')"
+boxed "$wd" --frames 1 > "$work/r7.txt" 2>/dev/null
+if grep -qx "loadError=unknown version setting '1.2' (1.0, 1.1, 1.3 or 1.4)" "$work/r7.txt"; then
+	report "refuse:unknown-version" PASS "a version that is none of the four is named"
+else
+	report "refuse:unknown-version" FAIL "$(grep -m1 . "$work/r7.txt")"
 fi
 
 wd="$(workdir refuse-damaged '{}')"; printf '\x55' | dd of="$wd/LEVELS.DAT" bs=1 seek=1000 conv=notrunc 2>/dev/null
@@ -173,13 +220,33 @@ fi
 # ------------------------------------------------------------------ 5. the runs
 route="$here/tests/lvl01-route.txt"
 props="Level.Current,Level.Next,Kid.Room,Kid.X,Kid.Y,Kid.HP,Time.Minutes Left,Time.Ticks Left"
-# name, steps, settings; the arguments are test_args's
+# what the command and cheat runs read
+cprops="Level.Current,Time.Minutes Left,Time.Ticks Left,Kid.HP,Kid.Max HP,Kid.Alive,Level.Drawn Room,Level.Upside Down,Effects.Feather Fall,Guard.Alive,Guard.HP,Kid.Room,Level.Next"
+# every fix and enhancement on, one by one (they all default to off)
+allfixes="$(python3 -c "
+import json, re
+s = {'skip_title': True, 'enable_copyprot': False, 'use_fixes_and_enhancements': True}
+for n in re.findall(r'POP_SETTING\((\w+), BOOL, \"Enhancements\"', open('$here/settings.inc').read()):
+    s[n] = True
+print(json.dumps(s, separators=(',', ':')))")"
+# SDLPoP's own quicksave of level 1, taken natively between two steps, for the
+# "savestate" slot: the run below starts where this one stood at step 650
+if [ -f "$data/PRINCE.DAT" ]; then
+	wd="$(workdir makestate '{"enable_copyprot":false}')"
+	native "$wd" --frames 651 --press 400:S:2 --press 600:R:30 --quicksave "650:$work/QUICKSAVE.SAV" \
+		--trace "$work/makestate.trace" --trace-props "$props" > /dev/null 2>&1
+fi
+# name, steps, settings, release (pop10 unless said); the arguments are test_args's
 tests=(
 	"title|700|{}"
 	"route|1100|{\"skip_title\":true,\"enable_copyprot\":false}"
 	"copyprot|1150|{\"skip_title\":true}"
 	"speaker|500|{\"sound\":\"pcSpeaker\"}"
-	"fixes|420|{\"skip_title\":true,\"enable_copyprot\":false,\"use_fixes_and_enhancements\":true}"
+	"fixes|420|$allfixes"
+	"route14|300|{\"version\":\"1.4\",\"skip_title\":true,\"enable_copyprot\":false}|pop14"
+	"commands|1300|{\"enable_copyprot\":false,\"first_level\":3}"
+	"cheats|1400|{\"cheats\":true,\"enable_copyprot\":false}"
+	"fromstate|200|{\"enable_copyprot\":false}"
 )
 test_args() {
 	case "$1" in
@@ -190,19 +257,42 @@ test_args() {
 		# (a loop that waits for a sound without a delay) into level 2
 		route) args=(--movie "$route" --poke "0:Random Seed=0" --screenshot "560:$work/cutscene.tga" --screenshot "1099:$work/level2.tga") ;;
 		fixes) args=(--movie "$route" --poke "0:Random Seed=0") ;;
+		route14) args=(--movie "$route" --poke "0:Random Seed=0") ;;
 		# the same route with copy protection: the potions level and its question
 		copyprot) args=(--movie "$route" --poke "0:Random Seed=0" --press 1110:R:2 --screenshot "1100:$work/manual.tga") ;;
 		speaker) args=(--press 400:S:2) ;;
+		# the command keys, each once, from level 3 (where saving is allowed)
+		commands) args=(--press 400:S:2 --press 500:s:1 --press 530:T:1 --press 560:v:1 --press 590:j:1 --press 620:k:1
+			--press 650:o:1 --press 700:P:1 --press 750:T:1 --press 800:G:1 --press 1000:l:1 --press 1100:N:1
+			--screenshot "505:$work/cmd-saved.tga" --screenshot "535:$work/cmd-time.tga" --screenshot "565:$work/cmd-version.tga"
+			--screenshot "595:$work/cmd-joystick.tga" --screenshot "625:$work/cmd-keyboard.tga" --screenshot "655:$work/cmd-sound.tga"
+			--screenshot "720:$work/cmd-paused.tga" --audio "$work/commands.pcm") ;;
+		# every cheat, from level 1 (Revive once the prince is dead), and Kill
+		# Guard at level 2's first guard, reached by Next Level
+		cheats) args=(--press 400:S:2 --press 460:+:1 --press 470:-:1 --press 480:M:1 --poke "490:Kid.HP=2" --press 500:H:1
+			--press 520:4:1 --press 530:6:1 --press 540:2:1 --press 550:8:1 --press 560:4:1 --press 570:5:1
+			--press 590:I:1 --press 600:I:1 --poke "620:Kid.HP=0" --press 700:V:1 --press 720:W:1
+			--press 760:B:1 --press 770:B:1 --press 780:c:1 --press 800:C:1 --press 850:N:1 --press 1252:L:30 --press 1300:K:1
+			--screenshot "765:$work/cheat-blind.tga" --screenshot "785:$work/cheat-rooms.tga" --screenshot "805:$work/cheat-corners.tga") ;;
+		# from SDLPoP's quicksave, and on
+		fromstate) args=(--press 100:R:20) ;;
 	esac
 }
 for t in "${tests[@]}"; do
-	IFS='|' read -r name frames settings <<< "$t"
-	wd="$(workdir "$name" "$settings")"
+	IFS='|' read -r name frames settings release <<< "$t"
+	if [ -n "$release" ] && [ ! -f "$roms/$release/PRINCE.DAT" ]; then
+		report "$name" SKIP "no $release data in $roms"; continue
+	fi
+	wd="$(workdir "$name" "$settings" "$roms/${release:-pop10}")"
+	if [ "$name" = fromstate ]; then
+		cp "$work/QUICKSAVE.SAV" "$wd/MY.SAV" 2>/dev/null
+		printf '{"savestate":["MY.SAV"]}' > "$wd/slots"
+	fi
 	test_args "$name"
 	args+=(--frames "$frames")
 	# the trace the legs below read is the first sandboxed run's; the native
 	# run keeps its own, which has to be the same
-	trace=(--trace-props "$props" --trace)
+	case "$name" in commands|cheats) trace=(--trace-props "$cprops" --trace) ;; *) trace=(--trace-props "$props" --trace) ;; esac
 
 	if ! native "$wd" "${args[@]}" --props-json "$work/$name.native.json" "${trace[@]}" "$work/$name.native.trace" > "$work/$name.native.txt" 2> "$work/$name.native.err"; then
 		report "$name:equivalence" FAIL "native runner: $(tail -1 "$work/$name.native.err")"; continue
@@ -261,7 +351,7 @@ done
 # gate last saw them (look at build/gate/*.png)
 png() { python3 "$here/tests/tga2png.py" "$work/$1.tga" "$work/$1.png" 2 2>/dev/null; }
 pixels() { tail -c +19 "$work/$1.tga" | sha1sum | cut -c1-16; }
-for shot in "title:299 (Broderbund presents):69546642de679025" "level1:450 (level 1, room 1):736ecb4c481d715d" \
+for shot in "title:299 (Broderbund presents):635e453723de3bc3" "level1:450 (level 1, room 1):736ecb4c481d715d" \
 	"cutscene:560 (the princess waits):c6020673a280e76c" "level2:1099 (level 2's first room):27bfbc1167e84d3e" \
 	"manual:1100 (the potions level's manual question):a4181980a53adbbd"; do
 	IFS=':' read -r file what want <<< "$shot"
@@ -383,6 +473,212 @@ if ! cmp -s <(grep audioHash "$work/speaker.box.txt") <(boxed "$work/title" --fr
 	report "settings:sound-card" PASS "the PC speaker sounds unlike the Sound Blaster"
 else
 	report "settings:sound-card" FAIL "the same sound either way"
+fi
+
+# ------------------------------------------------------------------ 6b. nothing of SDLPoP's by default
+if python3 - "$here/waterbox.config" > "$work/defaults.txt" 2>&1 <<'PYEOF'
+import json, sys
+cfg = json.load(open(sys.argv[1]))
+on = [s["name"] for s in cfg["settings"] if s["type"] == "bool" and s["default"] and s["name"] != "enable_copyprot"]
+fixes = [s["name"] for s in cfg["settings"] if s["name"].startswith(("fix_", "enable_")) and s["name"] != "enable_copyprot"]
+version = [s for s in cfg["settings"] if s["name"] == "version"][0]["default"]
+if on or version != "1.0":
+    sys.exit("on by default: %s; version %s" % (on, version))
+print("%d fixes and enhancements, the cheats and the master switch default off; copy protection on; version 1.0" % len(fixes))
+PYEOF
+then
+	report "settings:original-defaults" PASS "$(cat "$work/defaults.txt")"
+else
+	report "settings:original-defaults" FAIL "$(tail -1 "$work/defaults.txt")"
+fi
+# the master switch alone turns nothing on: the route plays as without it
+# (and with every fix chosen too, it does not)
+wd="$(workdir master '{"skip_title":true,"enable_copyprot":false,"use_fixes_and_enhancements":true}')"
+boxed "$wd" --frames 420 --movie "$route" --poke "0:Random Seed=0" 2>/dev/null | digests > "$work/master.txt"
+boxed "$work/route" --frames 420 --movie "$route" --poke "0:Random Seed=0" 2>/dev/null | digests > "$work/plain420.txt"
+if [ -s "$work/master.txt" ] && cmp -s "$work/master.txt" "$work/plain420.txt" && ! cmp -s "$work/master.txt" <(digests < "$work/fixes.box.txt" 2>/dev/null); then
+	report "settings:master-switch-alone" PASS "use_fixes_and_enhancements on, no fix chosen: the route is the original game's (every fix on: another game)"
+else
+	report "settings:master-switch-alone" FAIL "$(diff "$work/plain420.txt" "$work/master.txt" | head -2 | tr '\n' ' ')"
+fi
+
+# ------------------------------------------------------------------ 6c. the releases
+# the bottom line of a picture (the game's messages), as pixels
+strip() { tail -c +19 "$1" 2>/dev/null | head -c $((320 * 200 * 4)) | tail -c $((320 * 16 * 4)) | sha1sum | cut -c1-16; }
+have_all=1
+for r in pop11 pop13 pop14; do [ -f "$roms/$r/PRINCE.DAT" ] || have_all=0; done
+if [ "$have_all" -eq 0 ]; then
+	report "releases" SKIP "not every release's data in $roms (pop10 pop11 pop13 pop14)"
+else
+	for r in 10 11 13 14; do
+		v="${r:0:1}.${r:1:1}"
+		# the title, Ctrl+V on level 1, then Next Level straight to the potions
+		# level (copy protection on) and its question
+		wd="$(workdir "rel$r" "{\"version\":\"$v\"}" "$roms/pop$r")"
+		boxed "$wd" --frames 481 --press 400:S:2 --press 450:v:1 --press 470:N:1 --screenshot "299:$work/rel$r-title.tga" \
+			--screenshot "455:$work/rel$r-version.tga" --screenshot "480:$work/rel$r-question.tga" \
+			--trace "$work/rel$r.trace" --trace-props "Guard Skills.Strike Probability[0],Guard Skills.Restrike Probability[6],Guard Skills.Impaired Block Probability[1],Guard Skills.Refractory Timer[0],Level Colours[3],Level Colours[14],Level.Current" \
+			> "$work/rel$r.txt" 2>/dev/null
+		# level 3, where 1.3 changed the dungeon's colour
+		wd="$(workdir "rel$r-l3" "{\"version\":\"$v\",\"skip_title\":true,\"first_level\":3}" "$roms/pop$r")"
+		boxed "$wd" --frames 40 --screenshot "39:$work/rel$r-level3.tga" > /dev/null 2>&1
+	done
+	boot=""; for r in 10 11 13 14; do grep -q '^frames=481' "$work/rel$r.txt" && boot="$boot $r"; done
+	if [ "$boot" = " 10 11 13 14" ] && [ "$(tgapixels "$work/rel10-title.tga")" = "$(tgapixels "$work/rel11-title.tga")" ] &&
+	   [ "$(tgapixels "$work/rel13-title.tga")" = "$(tgapixels "$work/rel14-title.tga")" ] &&
+	   [ "$(tgapixels "$work/rel10-title.tga")" != "$(tgapixels "$work/rel14-title.tga")" ]; then
+		report "releases:boot" PASS "1.0, 1.1, 1.3 and 1.4 each play from their own files; 1.0/1.1 and 1.3/1.4 share a title, the pairs differ"
+	else
+		report "releases:boot" FAIL "booted:$boot; titles $(for r in 10 11 13 14; do printf '%s ' "$(tgapixels "$work/rel$r-title.tga")"; done)"
+	fi
+	b10="$(bluer "$work/rel10-level3.tga")"; b11="$(bluer "$work/rel11-level3.tga")"; b13="$(bluer "$work/rel13-level3.tga")"; b14="$(bluer "$work/rel14-level3.tga")"
+	if [ "$b10" -gt 0 ] && [ "$b11" -gt 0 ] && [ "$b13" -lt 0 ] && [ "$b14" -lt 0 ] &&
+	   [ "$(tgapixels "$work/rel10-level3.tga")" = "$(tgapixels "$work/rel11-level3.tga")" ] &&
+	   [ "$(tgapixels "$work/rel13-level3.tga")" = "$(tgapixels "$work/rel14-level3.tga")" ]; then
+		report "releases:level-colours" PASS "level 3's dungeon is blue in 1.0 and 1.1, green in 1.3 and 1.4 (blue minus green: $b10 $b11 $b13 $b14)"
+	else
+		report "releases:level-colours" FAIL "blue minus green: $b10 $b11 $b13 $b14"
+	fi
+	# the guards' tables the game plays by, read by name: 1.0's, then the later ones
+	gt() { awk '$1 == "init" { print $4, $5, $6, $7, $8, $9 }' "$work/rel$1.trace"; }
+	if [ "$(gt 10)" = "61 16 61 16 0 0" ] && [ "$(gt 11)" = "75 20 75 20 0 0" ] &&
+	   [ "$(gt 13)" = "75 20 75 20 1 4" ] && [ "$(gt 14)" = "75 20 75 20 1 4" ]; then
+		report "releases:tables" PASS "strike, restrike, impaired block, refractory: 1.0's 61/16/61/16, 1.1-1.4's 75/20/75/20; level colours in 1.3/1.4 only"
+	else
+		report "releases:tables" FAIL "1.0 [$(gt 10)] 1.1 [$(gt 11)] 1.3 [$(gt 13)] 1.4 [$(gt 14)]"
+	fi
+	# the potions level's question: each release's own manual; 1.3 and 1.4 ask alike
+	q10="$(tgapixels "$work/rel10-question.tga")"; q11="$(tgapixels "$work/rel11-question.tga")"
+	q13="$(tgapixels "$work/rel13-question.tga")"; q14="$(tgapixels "$work/rel14-question.tga")"
+	if [ "$(at "$work/rel10.trace" 480 7)" = "15" ] && [ "$q10" = "c6ce4c6e93c6d055" ] && [ "$q11" = "6b57b49150a35042" ] && [ "$q14" = "da132cb5c402f9c1" ] && [ "$q13" = "$q14" ]; then
+		report "releases:copy-protection" PASS "1.0 asks WORD 4 LINE 6 PAGE 10, 1.1 PAGE 1 LINE 1 WORD 7, 1.3 and 1.4 PAGE 7 LINE 4 WORD 2 (build/gate/rel*-question.png)"
+	else
+		report "releases:copy-protection" FAIL "level $(at "$work/rel10.trace" 480 7); pixels $q10 $q11 $q13 $q14"
+	fi
+	for r in 10 11 13 14; do png "rel$r-question"; png "rel$r-level3"; done
+	v10="$(strip "$work/rel10-version.tga")"; v11="$(strip "$work/rel11-version.tga")"; v13="$(strip "$work/rel13-version.tga")"; v14="$(strip "$work/rel14-version.tga")"
+	if [ "$v10" = "0c0c281791bf882a" ] && [ "$v11" = "30e0e28a3b91e961" ] && [ "$v13" = "952712dec783cb59" ] && [ "$v14" = "df9f2bb94f524025" ]; then
+		report "releases:version-line" PASS "Ctrl+V shows PRINCE OF PERSIA  V1.0, V1.1, V1.3, V1.4 - each release's own line"
+	else
+		report "releases:version-line" FAIL "strips $v10 $v11 $v13 $v14"
+	fi
+fi
+# the game plays by those tables: skill 1's strike probability held at 0 and
+# level 2's first guard never lands a blow
+wd="$(workdir guards '{"enable_copyprot":false,"first_level":2}')"
+boxed "$wd" --frames 800 --press 400:S:2 --press 520:L:30 --poke "520:Random Seed=0" --trace "$work/guards.trace" --trace-props "Kid.HP,Guard.Room" > /dev/null 2>&1
+boxed "$wd" --frames 800 --press 400:S:2 --press 520:L:30 --poke "520:Random Seed=0" --freeze "0-799:Guard Skills.Strike Probability[1]=0" \
+	--trace "$work/guards0.trace" --trace-props "Kid.HP,Guard.Room" > /dev/null 2>&1
+if [ "$(at "$work/guards.trace" 799 1)" = "0" ] && [ "$(at "$work/guards0.trace" 799 1)" = "3" ] && [ "$(at "$work/guards0.trace" 799 2)" = "4" ]; then
+	report "releases:tables-played" PASS "level 2's first guard kills the prince; with his skill's strike probability held at 0 the prince keeps 3 hit points"
+else
+	report "releases:tables-played" FAIL "HP $(at "$work/guards.trace" 799 1) / held $(at "$work/guards0.trace" 799 1), guard room $(at "$work/guards0.trace" 799 2)"
+fi
+
+# ------------------------------------------------------------------ 6d. the commands
+ct="$work/commands.trace"
+# the game's messages on its bottom line, as the pictures show them
+msgs=""; for m in saved time version joystick keyboard sound paused; do png "cmd-$m"; msgs="$msgs$(strip "$work/cmd-$m.tga") "; done
+if [ "$msgs" = "856d019109874529 1cec7b6cf820f05e a0d6dc697fd665b6 f6be5b5f39e8dd9e b862ed0748d96462 089b876412125279 27a495d1b6ce69bb " ]; then
+	report "commands:messages" PASS "GAME SAVED, 60 MINUTES LEFT, PRINCE OF PERSIA  V1.0, JOYSTICK NOT FOUND, KEYBOARD MODE, SOUND OFF, GAME PAUSED"
+else
+	report "commands:messages" FAIL "strips $msgs(build/gate/cmd-*.png)"
+fi
+# Pause holds the clock until a key; Restart Game goes to the title, Load Game
+# brings back level 3 as saved; Next Level cuts the time to 15 minutes
+if [ "$(at "$ct" 705 3)" = "$(at "$ct" 749 3)" ] && [ "$(at "$ct" 760 3)" -lt "$(at "$ct" 749 3)" ] &&
+   [ "$(at "$ct" 805 1)" = "65535" ] && [ "$(at "$ct" 1005 1)" = "3" ] && [ "$(at "$ct" 1110 2)" = "15" ] && [ "$(at "$ct" 1110 13)" = "4" ]; then
+	report "commands:effects" PASS "paused 705-749 (ticks held at $(at "$ct" 705 3)); title at 805; level 3 loaded at 1005; Next Level: level 4, 15 minutes"
+else
+	report "commands:effects" FAIL "ticks $(at "$ct" 705 3)/$(at "$ct" 749 3)/$(at "$ct" 760 3), level $(at "$ct" 805 1) $(at "$ct" 1005 1), minutes $(at "$ct" 1110 2), next $(at "$ct" 1110 13)"
+fi
+# Sound On/Off: no sound from the step after, through a cutscene's music
+peaks="$(python3 - "$work/commands.pcm" "$ct" <<'PYEOF'
+import struct, sys
+pcm = open(sys.argv[1], "rb").read()
+off = [0]
+for line in open(sys.argv[2]):
+    f = line.split()
+    if f[0] == "init": continue
+    num, den = map(int, f[1].split("/"))
+    off.append(off[-1] + 44100 * den // num)
+def peak(a, b):
+    s = struct.unpack_from("<%dh" % ((off[b] - off[a]) * 2), pcm, off[a] * 4)
+    return max(abs(x) for x in s) if s else 0
+print(peak(400, 650), peak(651, len(off) - 1))
+PYEOF
+)"
+set -- $peaks
+if [ "${1:-0}" -gt 0 ] && [ "${2:-1}" = "0" ]; then
+	report "commands:sound-off" PASS "peak $1 before Sound On/Off, silence after it to the end"
+else
+	report "commands:sound-off" FAIL "peaks before/after: $peaks"
+fi
+
+# ------------------------------------------------------------------ 6e. the cheats
+cht="$work/cheats.trace"
+# minutes, hit points, looking about, the screen flipped, feather fall,
+# revived, next level without losing time, and the guard killed
+looks="$(for s in 525 535 545 555 565 575; do printf '%s ' "$(at "$cht" $s 7)"; done)"
+if [ "$(at "$cht" 465 2)" = "61" ] && [ "$(at "$cht" 475 2)" = "60" ] && [ "$(at "$cht" 485 5)" = "4" ] &&
+   [ "$(at "$cht" 495 4)" = "2" ] && [ "$(at "$cht" 505 4)" = "3" ] && [ "$looks" = "5 1 2 1 5 1 " ] &&
+   [ "$(at "$cht" 595 8)" != "0" ] && [ "$(at "$cht" 605 8)" = "0" ] && [ "$(at "$cht" 699 6)" -gt 0 ] && [ "$(at "$cht" 705 6)" = "-1" ] &&
+   [ "$(at "$cht" 725 9)" != "0" ] && [ "$(at "$cht" 860 13)" = "2" ] && [ "$(at "$cht" 860 2)" = "60" ] &&
+   [ "$(at "$cht" 1299 10)" = "-1" ] && [ "$(at "$cht" 1305 10)" = "0" ] && [ "$(at "$cht" 1305 11)" = "0" ]; then
+	report "cheats:effects" PASS "+/- minutes, max and plain hit points, looks 5 1 2 1 5 1, flip, feather, revive, Next Level keeping 60 minutes, Kill Guard"
+else
+	report "cheats:effects" FAIL "min $(at "$cht" 465 2)/$(at "$cht" 475 2), HP $(at "$cht" 485 5) $(at "$cht" 495 4)->$(at "$cht" 505 4), looks $looks, flip $(at "$cht" 595 8)/$(at "$cht" 605 8), alive $(at "$cht" 699 6)->$(at "$cht" 705 6), feather $(at "$cht" 725 9), next $(at "$cht" 860 13) $(at "$cht" 860 2), guard $(at "$cht" 1299 10)->$(at "$cht" 1305 10)"
+fi
+png cheat-rooms; png cheat-corners; png cheat-blind
+if [ "$(tgapixels "$work/cheat-blind.tga")" = "c1b748d95b4798ac" ] && [ "$(strip "$work/cheat-rooms.tga")" = "208535b7243f4e56" ] && [ "$(strip "$work/cheat-corners.tga")" = "0d22e58114f3c93d" ]; then
+	report "cheats:pictures" PASS "Blind Mode leaves only the prince, the flames and his floor; Show Rooms prints S1 L5 R0 A0 B2, Show Corner Rooms AL0 AR0 BL6 BR3 (build/gate/cheat-*.png)"
+else
+	report "cheats:pictures" FAIL "blind $(tgapixels "$work/cheat-blind.tga"), strips $(strip "$work/cheat-rooms.tga") $(strip "$work/cheat-corners.tga")"
+fi
+# without the setting the cheats are no buttons at all: none is active, and
+# pressing every one on the title - where any key would start a game -
+# changes nothing
+wd="$(workdir nocheats '{"enable_copyprot":false}')"
+boxed "$wd" --frames 300 > "$work/nocheats-plain.txt" 2>/dev/null
+boxed "$wd" --frames 300 --press "100:cC-+VKIW4:30" --press "100:682BHM5:30" > "$work/nocheats-pressed.txt" 2>/dev/null
+if grep -qx 'activeButtons=17' "$work/nocheats-plain.txt" && grep -qx 'activeButtons=33' "$work/cheats.box.txt" &&
+   cmp -s <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt"); then
+	report "cheats:off" PASS "17 buttons active without the setting (33 with it); every cheat held for 30 steps on the title changes nothing"
+else
+	report "cheats:off" FAIL "$(grep activeButtons "$work/nocheats-plain.txt") / $(grep activeButtons "$work/cheats.box.txt"); $(diff <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt") | head -2 | tr '\n' ' ')"
+fi
+
+# ------------------------------------------------------------------ 6f. the slots
+# the savestate: the run from it stands where the one that took it stood
+snap="$(awk '$1 == 650 { $1 = $2 = $3 = ""; print }' "$work/makestate.trace")"
+from="$(awk '$1 == 0 { $1 = $2 = $3 = ""; print }' "$work/fromstate.trace")"
+if [ -n "$snap" ] && [ "$snap" = "$from" ] && [ "$(at "$work/fromstate.trace" 199 3)" != "$(at "$work/fromstate.trace" 0 3)" -o "$(at "$work/fromstate.trace" 199 4)" != "$(at "$work/fromstate.trace" 0 4)" ]; then
+	report "slot:savestate" PASS "SDLPoP's quicksave of step 650 (level, room, place, HP, time): the run starts there and plays on"
+else
+	report "slot:savestate" FAIL "step 650 [$snap] vs the run's first [$from]"
+fi
+wd="$(workdir badstate '{}')"
+printf 'V1.15   \0garbage' > "$wd/OLD.SAV"; printf '{"savestate":["OLD.SAV"]}' > "$wd/slots"
+boxed "$wd" --frames 1 > "$work/bs1.txt" 2>/dev/null
+head -c 100 "$work/QUICKSAVE.SAV" > "$wd/OLD.SAV"
+boxed "$wd" --frames 1 > "$work/bs2.txt" 2>/dev/null
+if grep -q "^loadError=the project's savestate OLD.SAV is not an SDLPoP quicksave" "$work/bs1.txt" &&
+   grep -q "^loadError=the project's savestate OLD.SAV is 100 bytes; a quicksave of this SDLPoP" "$work/bs2.txt"; then
+	report "slot:savestate-refused" PASS "another header, and a quicksave of another size (another SDLPoP build), are refused by name"
+else
+	report "slot:savestate-refused" FAIL "$(grep -m1 . "$work/bs1.txt") / $(grep -m1 . "$work/bs2.txt")"
+fi
+# the original game's own saved game: Load Game on the title resumes it
+wd="$(workdir savegame '{"enable_copyprot":false}')"
+printf '\036\000\317\002\005\000\004\000' > "$wd/MY.SAV"; printf '{"savegame":["MY.SAV"]}' > "$wd/slots"
+boxed "$wd" --frames 700 --press 300:l:1 --trace "$work/savegame.trace" --trace-props "Level.Current,Time.Minutes Left,Kid.HP" > /dev/null 2>&1
+head -c 5 "$wd/MY.SAV" > "$wd/SHORT.SAV"; printf '{"savegame":["SHORT.SAV"]}' > "$wd/slots"
+boxed "$wd" --frames 1 > "$work/sg2.txt" 2>/dev/null
+if [ "$(at "$work/savegame.trace" 699 1)" = "5" ] && [ "$(at "$work/savegame.trace" 699 2)" = "30" ] && [ "$(at "$work/savegame.trace" 699 3)" = "4" ] &&
+   grep -q "^loadError=the project's saved game SHORT.SAV is 5 bytes; a Prince of Persia PRINCE.SAV is 8" "$work/sg2.txt"; then
+	report "slot:savegame" PASS "a PRINCE.SAV of level 5, 30 minutes, 4 hit points: Load Game on the title resumes it; a 5-byte one is refused"
+else
+	report "slot:savegame" FAIL "level $(at "$work/savegame.trace" 699 1), minutes $(at "$work/savegame.trace" 699 2), HP $(at "$work/savegame.trace" 699 3); $(grep -m1 . "$work/sg2.txt")"
 fi
 
 # ------------------------------------------------------------------ 7. the package

@@ -1,7 +1,9 @@
 {
   "_comment": [
-    "Default bindings for Prince of Persia: the keyboard as the DOS game has it (the arrows, Shift, Enter, Ctrl+A to restart the level),",
-    "and the first pad: the d-pad and left stick as the arrows, A as Shift, Start as Enter, Back as Restart Level."
+    "Default bindings for Prince of Persia: the keyboard as the DOS game has it - the arrows, Shift, Enter, and each command and cheat on the game's own key -",
+    "except Restart Game, whose Ctrl+R is Chimera's Reboot Core (no key; bind one); the time cheats are on the keypad's - and +, as in the game.",
+    "Ctrl+G, Ctrl+B, R and Shift+S are also TAStudio's own keys while its window has the focus.",
+    "The first pad: the d-pad and left stick as the arrows, A as Shift, Start as Enter, Back as Restart Level."
   ],
   "AllTrollers": {
     "Prince of Persia": {
@@ -11,7 +13,33 @@
       "Right": "Right, J1 POV1R, X1 DpadRight, X1 LStickRight",
       "Shift": "Shift, LeftShift, RightShift, J1 B1, X1 A",
       "Enter": "Enter, J1 B10, X1 Start",
-      "Restart Level": "Ctrl+A, J1 B9, X1 Back"
+      "Pause": "Escape",
+      "Show Time": "Space",
+      "Restart Level": "Ctrl+A, J1 B9, X1 Back",
+      "Restart Game": "",
+      "Next Level": "Shift+L",
+      "Save Game": "Ctrl+G",
+      "Load Game": "Ctrl+L",
+      "Sound On/Off": "Ctrl+S",
+      "Version": "Ctrl+V",
+      "Joystick Mode": "Ctrl+J",
+      "Keyboard Mode": "Ctrl+K",
+      "Cheat Show Rooms": "C",
+      "Cheat Show Corner Rooms": "Shift+C",
+      "Cheat Less Time": "KeypadSubtract",
+      "Cheat More Time": "KeypadAdd",
+      "Cheat Revive": "R",
+      "Cheat Kill Guard": "K",
+      "Cheat Flip Screen": "Shift+I",
+      "Cheat Feather Fall": "Shift+W",
+      "Cheat Look Left": "H",
+      "Cheat Look Right": "J",
+      "Cheat Look Up": "U",
+      "Cheat Look Down": "N",
+      "Cheat Look Back": "Ctrl+B",
+      "Cheat Blind Mode": "Shift+B",
+      "Cheat Add Hit Point": "Shift+S",
+      "Cheat Add Max Hit Point": "Shift+T"
     }
   }
 }

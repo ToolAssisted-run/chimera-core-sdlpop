@@ -72,13 +72,28 @@ void __wrap_SDL_Delay(Uint32 ms)
 }
 
 /* SDLPoP's Shift+L hands a callback to a timer thread; there are no threads.
- * Unreachable from the panel (no L key), and SDLPoP reports the failure. */
+ * The driver runs it on the game's clock instead (popdrv_add_timer). */
 SDL_TimerID __wrap_SDL_AddTimer(Uint32 interval, SDL_TimerCallback cb, void *param)
 {
-	(void)interval; (void)cb; (void)param;
-	return 0;
+	return (SDL_TimerID)popdrv_add_timer(interval, (void *)cb, param);
 }
-SDL_bool __wrap_SDL_RemoveTimer(SDL_TimerID id) { (void)id; return SDL_FALSE; }
+SDL_bool __wrap_SDL_RemoveTimer(SDL_TimerID id) { return popdrv_remove_timer((int)id) ? SDL_TRUE : SDL_FALSE; }
+
+/* the keys the buttons hold down, which is what that timer asks about */
+const Uint8 *__wrap_SDL_GetKeyboardState(int *numkeys)
+{
+	if (numkeys) *numkeys = SDL_NUM_SCANCODES;
+	return popdrv_keyboard_state();
+}
+
+/* SDLPoP keeps its saves under $SDLPOP_SAVE_PATH, else under $HOME: one fixed
+ * name the driver knows (popdrv_save_file_open), whatever the host has */
+char *__real_getenv(const char *name);
+char *__wrap_getenv(const char *name)
+{
+	if (name && !strcmp(name, "SDLPOP_SAVE_PATH")) return (char *)"saves";
+	return __real_getenv(name);
+}
 
 time_t __wrap_time(time_t *t)
 {
@@ -177,6 +192,10 @@ static int is_channel(const char *path) { return path && (!strcmp(path, "setting
 FILE *__wrap_fopen(const char *path, const char *mode)
 {
 	if (!path || !mode) { errno = EINVAL; return NULL; }
+	/* the saved game, the hall of fame and the quicksave live in memory */
+	int handled = 0;
+	FILE *save = (FILE *)popdrv_save_file_open(path, mode, &handled);
+	if (handled) return save;
 	if (strchr(mode, 'w') || strchr(mode, 'a') || strchr(mode, '+')) { errno = EROFS; return NULL; }
 	if (is_ini(path))
 	{

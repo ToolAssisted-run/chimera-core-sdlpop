@@ -2,13 +2,15 @@
 """Writes a .chimeraProject for run-frontend.sh, by hand, as the wizard would.
 
 A Prince of Persia project is its settings, its firmware pins (every data
-file whose requiredWhen the settings and slots meet, pinned by SHA-1) and an
-input log in the panel's own button names - and, optionally, a level set in
-the "levels" slot. The movie, if given, is one of the gate's (JaffarPlus's
+file whose requiredWhen the settings and slots meet, pinned by SHA-1 - the
+release's files, by the version setting) and an input log in the panel's own
+button names (the cheats' only with the cheats setting on) - and, optionally,
+a level set in the "levels" slot. The movie, if given, is one of the gate's (JaffarPlus's
 |r|LRUDS| rows, # comments), turned into Chimera's log rows.
 
 usage: make-project.py <package> <out.chimeraProject> <frames> [--movie <route>]
                        [--settings <json>] [--file <slot>=<path>]... [--log-out <path>]
+                       [--press <frame>:<button name>]...
 --log-out also writes the rows alone, as chimera-run takes a movie.
 """
 import argparse
@@ -26,18 +28,33 @@ def sha1(path):
     return h.hexdigest().upper()
 
 
-def rows_from(movie, frames):
+def press(rows, spec, buttons):
+    """--press FRAME:BUTTON NAME: that button held on that row too."""
+    frame, name = spec.split(":", 1)
+    i = buttons.index(name)
+    r = list(rows[int(frame)])
+    r[1 + i] = "x"
+    rows[int(frame)] = "".join(r)
+
+
+def rows_from(movie, frames, buttons):
+    """The log rows over the buttons the core has active: the route's
+    |r|LRUDS| letters put under their buttons' names."""
+    at = {name: i for i, name in enumerate(buttons)}
     rows = []
     if movie:
         for line in open(movie):
             if line.startswith("#") or not line.strip():
                 continue
             r = line.strip()
-            # |r|LRUDS| -> the panel's order: Up Down Left Right Shift Enter Restart Level
-            keys = [r[5] == "U", r[6] == "D", r[3] == "L", r[4] == "R", r[7] == "S", False, r[1] == "r"]
-            rows.append("|" + "".join(c if k else "." for c, k in zip("UDLRSEA", keys)) + "|")
+            row = ["."] * len(buttons)
+            for name, held, ch in (("Up", r[5] == "U", "U"), ("Down", r[6] == "D", "D"), ("Left", r[3] == "L", "L"),
+                                   ("Right", r[4] == "R", "R"), ("Shift", r[7] == "S", "S"), ("Restart Level", r[1] == "r", "A")):
+                if held:
+                    row[at[name]] = ch
+            rows.append("|" + "".join(row) + "|")
     while len(rows) < frames:
-        rows.append("|.......|")
+        rows.append("|" + "." * len(buttons) + "|")
     return rows[:frames]
 
 
@@ -67,17 +84,22 @@ def main():
     ap.add_argument("--settings", default="{}")
     ap.add_argument("--file", action="append", default=[])
     ap.add_argument("--log-out")
+    ap.add_argument("--press", action="append", default=[])
     a = ap.parse_args()
 
     cfg = json.loads(zipfile.ZipFile(a.package).read("waterbox.config"))
-    buttons = cfg["input"]["buttons"]
-    rows = rows_from(a.movie, a.frames)
+    settings = {d["name"]: d["default"] for d in cfg["settings"]}
+    settings.update(json.loads(a.settings))
+    # the cheats' buttons are active only with the cheats setting on
+    # (IsButtonActive), and the log has only the active ones
+    buttons = [b for b in cfg["input"]["buttons"] if settings.get("cheats") or not b.startswith("Cheat ")]
+    rows = rows_from(a.movie, a.frames, buttons)
+    for spec in a.press:
+        press(rows, spec, buttons)
     if a.log_out:
         open(a.log_out, "w").write("\n".join(rows) + "\n")
     log = "[Input]\nLogKey:#" + "|".join(buttons) + "|\n" + "\n".join(rows) + "\n[/Input]\n"
 
-    settings = {d["name"]: d["default"] for d in cfg["settings"]}
-    settings.update(json.loads(a.settings))
     files = []
     for spec in a.file:
         slot, path = spec.split("=", 1)

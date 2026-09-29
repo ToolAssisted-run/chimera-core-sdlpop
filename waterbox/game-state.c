@@ -163,12 +163,12 @@ static char *g_json;
 
 /* ------------------------------------------------------------ the domains */
 
-int popdrv_domain_count(void) { return 5; }
+int popdrv_domain_count(void) { return 6; }
 
 const char *popdrv_domain_name(int i)
 {
-	static const char *const names[] = { "Game State", "Level", "Mobs", "Trobs", "Hall of Fame" };
-	return i >= 0 && i < 5 ? names[i] : NULL;
+	static const char *const names[] = { "Game State", "Level", "Mobs", "Trobs", "Hall of Fame", "Custom Options" };
+	return i >= 0 && i < 6 ? names[i] : NULL;
 }
 
 uint8_t *popdrv_domain_ptr(int i)
@@ -180,6 +180,9 @@ uint8_t *popdrv_domain_ptr(int i)
 	case 2: return (uint8_t *)mobs;
 	case 3: return (uint8_t *)trobs;
 	case 4: return (uint8_t *)hof;
+	/* the options the game plays by (SDLPoP's custom options, which the core
+	 * always uses: the release's guard tables and level colours are there) */
+	case 5: return (uint8_t *)custom;
 	default: return NULL;
 	}
 }
@@ -193,6 +196,7 @@ int64_t popdrv_domain_size(int i)
 	case 2: return (int64_t)sizeof mobs;
 	case 3: return (int64_t)sizeof trobs;
 	case 4: return (int64_t)sizeof(pop_hof_entry) * 6;
+	case 5: return (int64_t)sizeof(custom_options_type);
 	default: return 0;
 	}
 }
@@ -377,6 +381,24 @@ int gamestate_init(char *err, int errsize)
 			{ "Hall of Fame.Name", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, name), T_U8, 6, hs, 0, 0, 25, 1, NULL, "The names entered after winning, best time first" },
 			{ "Hall of Fame.Minutes", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, min), T_S16, 6, hs, 0, 0, 0, 1, NULL, "Minutes that were left" },
 			{ "Hall of Fame.Ticks", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, tick), T_S16, 6, hs, 0, 0, 0, 1, NULL, "Ticks that were left in the minute" },
+		};
+		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
+	}
+
+	/* the release's own tables the game plays by: how each guard skill (0-11)
+	 * fights - 1.0's, or the later ones of 1.1, 1.3 and 1.4 - and the level
+	 * colours 1.3 and 1.4 have */
+	{
+		const int w = 2;
+		entry_t e[] = {
+			{ "Guard Skills.Strike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, strikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely a guard of skill i is to strike" },
+			{ "Guard Skills.Restrike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, restrikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to strike again after a blocked strike" },
+			{ "Guard Skills.Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, blockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to block a strike" },
+			{ "Guard Skills.Impaired Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, impblockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to block while impaired" },
+			{ "Guard Skills.Advance Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, advprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to advance" },
+			{ "Guard Skills.Refractory Timer", "Custom Options", "Guard Skills", offsetof(custom_options_type, refractimer), T_U16, 12, w, 0, 0, 0, 1, NULL, "Ticks he waits after a strike" },
+			{ "Guard Skills.Extra Strength", "Custom Options", "Guard Skills", offsetof(custom_options_type, extrastrength), T_U16, 12, w, 0, 0, 0, 1, NULL, "Hit points he has beyond his level's" },
+			{ "Level Colours", "Custom Options", "Levels", offsetof(custom_options_type, tbl_level_color), T_U16, 16, w, 0, 0, 0, 1, NULL, "Level i's colour variation (0: none; 1.3 and 1.4 only)" },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}

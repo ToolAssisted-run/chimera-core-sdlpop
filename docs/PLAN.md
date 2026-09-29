@@ -2,7 +2,7 @@
 
 ## What this is
 
-Prince of Persia 1.0 (DOS), played by SDLPoP - David Nagy's port of the game
+Prince of Persia (DOS) - 1.0, 1.1, 1.3 or 1.4 - played by SDLPoP - David Nagy's port of the game
 from its disassembly - as a Chimera core. The first **game core**
 (Chimera's `docs/game-cores.md`, user-decided 2026-09-28): a core that is one
 game rather than one machine, whose data files are firmware, whose options
@@ -11,7 +11,8 @@ whose tools watch the game's own properties by name.
 
 Upstream is two submodules, both compiled from source into the core:
 
-- `extern/SDLPoP` - NagyD/SDLPoP, pinned; one patch (seven one-line hooks).
+- `extern/SDLPoP` - NagyD/SDLPoP, pinned; two patches (seven one-line hooks;
+  the release's copy protection and Ctrl+V line).
 - `extern/SDL` - libsdl-org/SDL at release-2.32.10, unpatched.
 
 The core's own code is `waterbox/`: the driver (`sdlpop-driver.c`), the
@@ -141,35 +142,81 @@ the game draws whatever happens (its drawing is part of the game).
 
 ## The data
 
-The 21 DAT files of Prince of Persia 1.0 are firmware, declared under their
-own names with 1.0's size and SHA-1. Always needed: PRINCE, KID, LEVELS,
-TITLE, PV, VDUNGEON, VPALACE, GUARD, GUARD1, GUARD2, FAT, SKEL, VIZIER,
-SHADOW, IBM_SND1, IBM_SND2 (SDLPoP opens the PC speaker files whatever the
-card). With the Sound Blaster (the default): DIGISND1-3 and MIDISND1-2. Not
-needed: PRINCE.EXE, SETUP.*, CONFIG.DAT, the drivers.
+Each release's files are firmware, declared under their own names with the
+release's size and SHA-1, and required by the `version` setting (variants of
+one file share its id, with disjoint `requiredWhen`s). Always needed: PRINCE,
+KID, LEVELS, TITLE, PV, VDUNGEON, VPALACE, GUARD, GUARD1, GUARD2, FAT, SKEL,
+VIZIER, SHADOW, IBM_SND1, IBM_SND2 (SDLPoP opens the PC speaker files whatever
+the card) and PRINCE.EXE. With the Sound Blaster (the default): DIGISND1-3 and
+MIDISND1-2. Not needed: SETUP.*, CONFIG.DAT, the drivers, the CGA/EGA files.
+
+The user's four releases (2026-09-29): 1.0, 1.1 and 1.3 from the 3.5" disk
+zips in Documents\TAS\roms\dos\pop1versions, 1.4 from the Collection CD
+(Desktop\prince1). **1.0 and 1.1 have byte-identical data files, and so do
+1.3 and 1.4**; only PRINCE.EXE tells a pair apart, so it is required too - the
+core only hashes it. Every data file differs between the pairs except KID,
+LEVELS, PV, GUARD*, FAT, VIZIER, SHADOW and IBM_SND*.
+
+**Correction:** until 2026-09-29 the core called the files it had "1.0's".
+They were 1.4's (the prince1 folder: PRINCE.EXE of 110855 bytes, SDLPoP's
+`dos_14_packed`, "PRINCE OF PERSIA  V1.4" and the cheat word "improved" in
+it, and 1.4's PRESETS.DEF/SNDDRVRS layout). The "later release's" sound files
+the core refused as SDLPoP's were in fact 1.0's; only DIGISND1.DAT of
+SDLPoP's repository is no release's, and it is the one still refused.
 
 Init hashes every file the game will open. A missing one is named; one of
-another release is refused by name - SDLPoP's repository ships its own
-DIGISND/MIDISND files, a later release's (1.3-format waves), and those five
-hashes are recognised; anything else is refused with both hashes. **What 1.3
-and 1.4's other files hash to is not known here**, so they are refused as
-"not 1.0's" rather than by release. Note that Chimera's own firmware check
-does not stop a wrong file reaching the core: the wizard refuses one, but a
-`--firmware` file is not hash-checked and a mismatch at boot is only a
-warning - which is why the core checks.
+another release is named as that release's ("PRINCE.DAT is Prince of Persia
+1.3/1.4's, not 1.0's - the project plays 1.0 (the version setting)");
+anything else is refused with both hashes. Chimera's own firmware check does
+not stop a wrong file reaching the core (a `--firmware` file is not
+hash-checked), which is why the core checks.
+
+## The releases (2026-09-29)
+
+What differs between the releases in the program, read out of each PRINCE.EXE
+(EXEPACK, unpacked with a small script in the session scratchpad) and checked
+against SDLPoP's own EXE reader (`load_dos_exe_modifications`, whose 97
+options were compared across the unpacked 1.0, 1.3 and 1.4: only the four
+guard tables below differ):
+
+- **The guards' fighting tables.** 1.0: strike 61/100/61/61/61/40/100/220/0/48/
+  32/48, restrike ... 16 8 ..., impaired block 0/61/61/..., refractory
+  16/16/16/16/8/.... **1.1, 1.3 and 1.4**: 75/.../50/.../60/40/60, 20 10,
+  0/75/75/..., 20/20/20/20/10/.... Block, advance and extra strength are the
+  same. CusPop labels the sets "1.0" and "1.3, 1.4" and says nothing of 1.1;
+  1.1's PRINCE.EXE holds the later set, and the core follows the program.
+- **The level colours** (tbl_level_color, 0 0 0 1 0 0 0 1 2 2 0 0 3 3 4 0): in
+  the 1.3 and 1.4 EXEs only, and only 1.3/1.4's PRINCE.DAT has the palettes
+  (resource 20). 1.0 and 1.1: none - level 3's dungeon is blue, not green.
+- **The copy protection**: three manuals. 1.0 (the letters
+  AABBCCDDEFFGHHIIJJKLLMMNOOPPRRSSTTUUVYWY, SDLPoP's tables), 1.1 (its 6-page
+  manual: other pages, lines and words, letters ...VWYY) and 1.3/1.4
+  (WOESPBYSKJTBCFESKMMTPYKCGSULJCDILTTAMCSG, as quickerSDLPoP has them). 1.1
+  and later print "PAGE %d LINE %d WORD %d" on screen, 1.0 "WORD %d LINE %d
+  PAGE %d"; the long question is the same in all.
+- **Ctrl+V**: "PRINCE OF PERSIA  V1.x", each release's own.
+
+The guard tables and level colours go to SDLPoP through its ini ([Skill N],
+[Level N]); patch 0002 makes the copy protection's four tables writable, and
+asks the core for the on-screen order and the Ctrl+V line. The tables the game
+plays by are properties (the "Custom Options" domain: Guard Skills.* and
+Level Colours), so a movie's reader sees them and the gate reads them.
 
 ## Settings
 
-56, all things that change play, recorded in the project:
+58, all things that change play, recorded in the project:
 
-- `sound` (digital / pcSpeaker) and `random_seed` (the DOS game took it from
-  the clock; SDLPoP's own `seed=` argument);
-- `enable_copyprot` (**on**: 1.0 has the potions level after level 1, and
-  SDLPoP's own default is off), `first_level`, `skip_title`,
+- `version` (1.0 / 1.1 / 1.3 / 1.4, **1.0**), `cheats` (off: the cheat word on
+  the DOS command line, "megahit"), `sound` (digital / pcSpeaker) and
+  `random_seed` (the DOS game took it from the clock; SDLPoP's own `seed=`
+  argument);
+- `enable_copyprot` (**on**: the original has the potions level after level
+  1, and SDLPoP's own default is off), `first_level`, `skip_title`,
   `start_minutes_left`, `start_hitp`, `max_hitp_allowed`;
-- `use_fixes_and_enhancements` (off) and each of SDLPoP's 48 fixes and
-  enhancements under its own ini name (each on, as in SDLPoP.ini; none acts
-  until the master switch is on). `fix_drop_2_rooms_climbing_loose_tile` is
+- `use_fixes_and_enhancements` and each of SDLPoP's 47 fixes and enhancements
+  under its own ini name - **all off** (user-decided 2026-09-29: the defaults
+  are the original game, with nothing of SDLPoP's; until then each fix
+  defaulted on and waited for the master switch). `fix_drop_2_rooms_climbing_loose_tile` is
   missing: SDLPoP's ini reader does not read it, so it is always on with the
   master switch.
 
@@ -177,11 +224,58 @@ warning - which is why the core checks.
 it and the driver's data-file table, and `tests/check-wire.py` holds the
 three together.
 
-Pinned, not settings: no SDLPoP info screen, no pause menu, no quicksaves or
-replays (keys the panel does not have, files the sandbox never writes), no
-lighting, sharp scaling, and the original's fades, flashes and texts - which
-change how many steps a scene takes, so are not picture-only either, and stay
-at the original.
+Pinned, not settings: no SDLPoP info screen, no pause menu, no replays, no
+quicksaves (but for the savestate slot, below; F6 and F9 are on no button),
+no lighting, sharp scaling, and the original's fades, flashes and texts -
+which change how many steps a scene takes, so are not picture-only either, and
+stay at the original.
+
+**`skip_title` has a trap of SDLPoP's own**: it starts the first level without
+naming a level to start (`start_level` stays -1), so the first key of the run
+is the title's "any key starts a game" and restarts the level. The known route
+relies on it (its Shift on row 2 is that restart), so it is left as SDLPoP
+has it; the savestate slot names a level instead, as the DOS game's
+"prince 5" did.
+
+## The controls (2026-09-29)
+
+Each key the game reads is its own button (the wire order is the driver's
+`PopButton`): Up, Down, Left, Right, Shift, Enter; the commands Pause (Esc),
+Show Time (Space), Restart Level (Ctrl+A), Restart Game (Ctrl+R), Next Level
+(Shift+L), Save Game (Ctrl+G), Load Game (Ctrl+L), Sound On/Off (Ctrl+S),
+Version (Ctrl+V), Joystick Mode (Ctrl+J), Keyboard Mode (Ctrl+K); and with the
+cheats setting, 16 cheats (C, Shift+C, keypad - and +, R, K, Shift+I, Shift+W,
+H, J, U, N, Ctrl+B, Shift+B, Shift+S, Shift+T). Ctrl+Q is left out: it ends
+the program. SDLPoP's own keys (F6/F9, Tab, Backspace, the backtick, F12,
+Ctrl+C) are on no button.
+
+A modifier is a real key shared by every button that holds it: a Ctrl or Shift
+command puts it down before its key and lifts it after, unless another held
+button still holds it. The cheats' buttons are inactive without the setting
+(`IsButtonActive`), so the frontend shows 17 columns or 33 and the driver
+ignores an inactive one.
+
+Two seams the commands needed: Shift+L starts an SDL timer (250 ms, giving the
+Shift keys back if still held) - SDL's timers run on a thread, so the driver
+runs them on the game's clock when a step reaching their time resumes, and
+`SDL_GetKeyboardState` answers with the keys the buttons hold (before, the
+wrapped `SDL_AddTimer` returned 0 and SDLPoP quit on Shift+L). And the files
+the game writes - PRINCE.SAV (Ctrl+G), PRINCE.HOF, QUICKSAVE.SAV - live in
+guest memory: `getenv("SDLPOP_SAVE_PATH")` is "saves", and fopen of
+"saves/NAME" is an in-memory file, so a savestate carries them.
+
+## Slots: savegame and savestate (2026-09-29)
+
+- `savegame`: a PRINCE.SAV (8 bytes: minutes, ticks, level, hit points), put
+  where the game's Load Game (Ctrl+L on the title) finds it.
+- `savestate`: an SDLPoP quicksave (QUICKSAVE.SAV, "V1.16b4 " and then
+  `quick_process`'s variables; its size is checked against this build's).
+  The run starts from it on its first tick: Init sets `need_quick_load`, as F9
+  on the title does, and names the first level to start so the title is not
+  shown. The gate makes one with run-native's `--quicksave STEP:PATH`, which
+  calls SDLPoP's `quick_save()` between two steps.
+
+
 
 ## Properties
 
@@ -217,7 +311,12 @@ in place of the original (0 or 1 file, not held to 1.0's hash; the original
 LEVELS.DAT is then not required - `requiredWhen: {"not": {"slot": "levels"}}`).
 A whole SDLPoP mod folder is not supported.
 
-## The patch
+## The patches
+
+`patches/0002` (2026-09-29), under `#ifdef CHIMERA_CORE`: the copy
+protection's four tables writable (`COPYPROT_TABLE`), the on-screen question
+in "PAGE LINE WORD" order when `chimera_copyprot_page_first()`, and Ctrl+V
+showing `chimera_version_text()`.
 
 `patches/0001` adds, under `#ifdef CHIMERA_CORE`: the include of
 `chimera-hooks.h` in `common.h`; `chimera_wait_for_timer` in
@@ -227,7 +326,33 @@ A whole SDLPoP mod folder is not supported.
 
 ## The gate (waterbox/run-gate.sh)
 
-57 legs, all green on 2026-09-28 with the user's 1.0 data:
+99 legs, all green on 2026-09-29 with the user's four releases (57 on
+2026-09-28, on what were in fact 1.4's files). The 2026-09-29 additions, each
+seen to fail on a break of its own:
+
+| Break | Leg that failed |
+| --- | --- |
+| 1.1 given 1.0's guard tables | releases:tables |
+| 1.3 without level colours | releases:level-colours |
+| 1.1 asking WORD first | releases:copy-protection |
+| 1.3's Ctrl+V line "V1.4" | releases:version-line |
+| no quickload of the savestate | slot:savestate |
+| the saved game never reaching the game | slot:savegame |
+| SDL_AddTimer returning 0 (Shift+L quits) | commands:effects, cheats:effects, releases:copy-protection |
+| no cheat word | cheats:effects, cheats:pictures |
+| every button active | cheats:off |
+| the driver taking inactive buttons | cheats:off (the cheats pressed on the title start a game) |
+| a route-relevant fix on by default | settings:original-defaults, settings:master-switch-alone |
+| the guard tables read from SDLPoP's unused defaults | releases:tables, releases:tables-played |
+| no other-release detection | refuse:other-release |
+| a wrong 1.3/1.4 hash | releases:boot and the legs that need 1.3/1.4 |
+
+The frontend gate's `gui:cheats-project` (a 33-column project pressing More
+Time on row 50) failed on a core that never activates the cheats; its first
+form, with no cheat pressed, did not - Chimera drops a log column the core
+does not have, silently.
+
+The 2026-09-28 legs:
 
 - build (native, harnesses, core.wbx through check-wbx) and freshness (the
   tested core.wbx must be newer than every source);
@@ -342,7 +467,8 @@ tile animations), so step 0 is its row 1.
 - **Winning the game asks for a name** in the Hall of Fame, and the panel has
   no letter keys: the name entry cannot be finished, so a won game stays on
   it. A movie ends at the win; a player cannot go on to the title.
-- SDLPoP's pause menu, cheats, Shift+L, quicksaves and replays are out of
-  reach (their keys are not on the panel; the menu would change settings).
+- SDLPoP's pause menu and replays are out of reach (their keys are on no
+  button; the menu would change settings). Quicksaves only as the savestate
+  slot.
 - Linux only; the Windows build and CI (`chimera.yml`) are not written.
-- 1.3/1.4 hashes, beyond SDLPoP's sound files (above).
+- `skip_title`'s first-key restart (above) is SDLPoP's; left as it is.

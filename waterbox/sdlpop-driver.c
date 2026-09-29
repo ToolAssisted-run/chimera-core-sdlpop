@@ -953,11 +953,21 @@ static int mod_held(int mod)
 	return 0;
 }
 
+/* whether another held button holds the same key (Show Rooms and Show Corner
+ * Rooms are both C): the keyboard has one of each */
+static int key_held_by_other(int self)
+{
+	for (int i = 0; i < POP_BTN_COUNT; i++)
+		if (i != self && i != POP_BTN_SHIFT && g.held[i] && k_keys[i].key == k_keys[self].key) return 1;
+	return 0;
+}
+
 /* The buttons that changed, as the key events a keyboard would have sent, in
  * the panel's order. The modifiers are real keys: a Ctrl or Shift command
  * puts its modifier down before its key and lifts it after, unless another
  * held button still holds it - so Shift and Next Level together are one Shift
- * key, and a key pressed while a modifier is down carries it. */
+ * key, and a key pressed while a modifier is down carries it. So are the keys
+ * two buttons share: down with the first, up with the last. */
 static void push_input(void)
 {
 	for (int i = 0; i < POP_BTN_COUNT; i++)
@@ -970,11 +980,11 @@ static void push_input(void)
 		{
 			if ((mods & MOD_CTRL) && !g.ctrl_down) { g.ctrl_down = 1; push_key(1, SDL_SCANCODE_LCTRL); }
 			if ((mods & MOD_SHIFT) && !g.shift_down) { g.shift_down = 1; push_key(1, SDL_SCANCODE_LSHIFT); }
-			if (i != POP_BTN_SHIFT) push_key(1, k_keys[i].key);
+			if (i != POP_BTN_SHIFT && !key_held_by_other(i)) push_key(1, k_keys[i].key);
 		}
 		else
 		{
-			if (i != POP_BTN_SHIFT) push_key(0, k_keys[i].key);
+			if (i != POP_BTN_SHIFT && !key_held_by_other(i)) push_key(0, k_keys[i].key);
 			if (g.ctrl_down && !mod_held(MOD_CTRL)) { g.ctrl_down = 0; push_key(0, SDL_SCANCODE_LCTRL); }
 			if (g.shift_down && !mod_held(MOD_SHIFT)) { g.shift_down = 0; push_key(0, SDL_SCANCODE_LSHIFT); }
 		}

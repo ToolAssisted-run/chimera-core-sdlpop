@@ -18,7 +18,8 @@
 #     level colours, its guards' tables, its copy protection and its Ctrl+V
 #   - obey every command key and, with the cheats setting, every cheat - and
 #     no cheat without it
-#   - start from a savestate (an SDLPoP quicksave) and resume a saved game
+#   - start from a savestate (an SDLPoP quicksave), and enter the player's
+#     name in the hall of fame by itself
 #   - refuse a missing data file, another release's, SDLPoP's own and a
 #     damaged one
 #   - package deterministically
@@ -221,7 +222,7 @@ fi
 route="$here/tests/lvl01-route.txt"
 props="Level.Current,Level.Next,Kid.Room,Kid.X,Kid.Y,Kid.HP,Time.Minutes Left,Time.Ticks Left"
 # what the command and cheat runs read
-cprops="Level.Current,Time.Minutes Left,Time.Ticks Left,Kid.HP,Kid.Max HP,Kid.Alive,Level.Drawn Room,Level.Upside Down,Effects.Feather Fall,Guard.Alive,Guard.HP,Kid.Room,Level.Next"
+cprops="Level.Current,Time.Minutes Left,Time.Ticks Left,Kid.HP,Kid.Max HP,Kid.Alive,Level.Drawn Room,Level.Upside Down,Effects.Feather Fall,Guard.Alive,Guard.HP,Kid.Room,Level.Next,Kid.X"
 # every fix and enhancement on, one by one (they all default to off)
 allfixes="$(python3 -c "
 import json, re
@@ -261,10 +262,11 @@ test_args() {
 		# the same route with copy protection: the potions level and its question
 		copyprot) args=(--movie "$route" --poke "0:Random Seed=0" --press 1110:R:2 --screenshot "1100:$work/manual.tga") ;;
 		speaker) args=(--press 400:S:2) ;;
-		# the command keys, each once, from level 3 (where saving is allowed)
-		commands) args=(--press 400:S:2 --press 500:s:1 --press 530:T:1 --press 560:v:1 --press 590:j:1 --press 620:k:1
-			--press 650:o:1 --press 700:P:1 --press 750:T:1 --press 800:G:1 --press 1000:l:1 --press 1100:N:1
-			--screenshot "505:$work/cmd-saved.tga" --screenshot "535:$work/cmd-time.tga" --screenshot "565:$work/cmd-version.tga"
+		# the command keys, each once, from level 3: Restart Level after the
+		# prince has run, Restart Game to the title, a new game, Next Level
+		commands) args=(--press 400:S:2 --press 530:T:1 --press 560:v:1 --press 590:j:1 --press 620:k:1
+			--press 650:o:1 --press 700:P:1 --press 750:T:1 --press 760:R:15 --press 780:A:1 --press 800:G:1 --press 1000:S:2 --press 1100:N:1
+			--screenshot "535:$work/cmd-time.tga" --screenshot "565:$work/cmd-version.tga"
 			--screenshot "595:$work/cmd-joystick.tga" --screenshot "625:$work/cmd-keyboard.tga" --screenshot "655:$work/cmd-sound.tga"
 			--screenshot "720:$work/cmd-paused.tga" --audio "$work/commands.pcm") ;;
 		# every cheat, from level 1 (Revive once the prince is dead), and Kill
@@ -578,19 +580,21 @@ fi
 # ------------------------------------------------------------------ 6d. the commands
 ct="$work/commands.trace"
 # the game's messages on its bottom line, as the pictures show them
-msgs=""; for m in saved time version joystick keyboard sound paused; do png "cmd-$m"; msgs="$msgs$(strip "$work/cmd-$m.tga") "; done
-if [ "$msgs" = "856d019109874529 1cec7b6cf820f05e a0d6dc697fd665b6 f6be5b5f39e8dd9e b862ed0748d96462 089b876412125279 27a495d1b6ce69bb " ]; then
-	report "commands:messages" PASS "GAME SAVED, 60 MINUTES LEFT, PRINCE OF PERSIA  V1.0, JOYSTICK NOT FOUND, KEYBOARD MODE, SOUND OFF, GAME PAUSED"
+msgs=""; for m in time version joystick keyboard sound paused; do png "cmd-$m"; msgs="$msgs$(strip "$work/cmd-$m.tga") "; done
+if [ "$msgs" = "1cec7b6cf820f05e a0d6dc697fd665b6 f6be5b5f39e8dd9e b862ed0748d96462 089b876412125279 27a495d1b6ce69bb " ]; then
+	report "commands:messages" PASS "60 MINUTES LEFT, PRINCE OF PERSIA  V1.0, JOYSTICK NOT FOUND, KEYBOARD MODE, SOUND OFF, GAME PAUSED"
 else
 	report "commands:messages" FAIL "strips $msgs(build/gate/cmd-*.png)"
 fi
-# Pause holds the clock until a key; Restart Game goes to the title, Load Game
-# brings back level 3 as saved; Next Level cuts the time to 15 minutes
+# Pause holds the clock until a key; Restart Level puts the prince back where
+# the level starts; Restart Game goes to the title; Next Level cuts the time
+# to 15 minutes
 if [ "$(at "$ct" 705 3)" = "$(at "$ct" 749 3)" ] && [ "$(at "$ct" 760 3)" -lt "$(at "$ct" 749 3)" ] &&
-   [ "$(at "$ct" 805 1)" = "65535" ] && [ "$(at "$ct" 1005 1)" = "3" ] && [ "$(at "$ct" 1110 2)" = "15" ] && [ "$(at "$ct" 1110 13)" = "4" ]; then
-	report "commands:effects" PASS "paused 705-749 (ticks held at $(at "$ct" 705 3)); title at 805; level 3 loaded at 1005; Next Level: level 4, 15 minutes"
+   [ "$(at "$ct" 779 14)" != "$(at "$ct" 759 14)" ] && [ "$(at "$ct" 790 14)" = "$(at "$ct" 759 14)" ] &&
+   [ "$(at "$ct" 805 1)" = "65535" ] && [ "$(at "$ct" 1010 1)" = "3" ] && [ "$(at "$ct" 1110 2)" = "15" ] && [ "$(at "$ct" 1110 13)" = "4" ]; then
+	report "commands:effects" PASS "paused 705-749 (ticks held at $(at "$ct" 705 3)); level 3 restarted at 780; title at 805; Next Level: level 4, 15 minutes"
 else
-	report "commands:effects" FAIL "ticks $(at "$ct" 705 3)/$(at "$ct" 749 3)/$(at "$ct" 760 3), level $(at "$ct" 805 1) $(at "$ct" 1005 1), minutes $(at "$ct" 1110 2), next $(at "$ct" 1110 13)"
+	report "commands:effects" FAIL "ticks $(at "$ct" 705 3)/$(at "$ct" 749 3)/$(at "$ct" 760 3), x $(at "$ct" 759 14)/$(at "$ct" 779 14)/$(at "$ct" 790 14), level $(at "$ct" 805 1) $(at "$ct" 1010 1), minutes $(at "$ct" 1110 2), next $(at "$ct" 1110 13)"
 fi
 # Sound On/Off: no sound from the step after, through a cutscene's music
 peaks="$(python3 - "$work/commands.pcm" "$ct" <<'PYEOF'
@@ -641,9 +645,9 @@ fi
 wd="$(workdir nocheats '{"enable_copyprot":false}')"
 boxed "$wd" --frames 300 > "$work/nocheats-plain.txt" 2>/dev/null
 boxed "$wd" --frames 300 --press "100:cC-+VKIW4:30" --press "100:682BHM5:30" > "$work/nocheats-pressed.txt" 2>/dev/null
-if grep -qx 'activeButtons=17' "$work/nocheats-plain.txt" && grep -qx 'activeButtons=33' "$work/cheats.box.txt" &&
+if grep -qx 'activeButtons=15' "$work/nocheats-plain.txt" && grep -qx 'activeButtons=31' "$work/cheats.box.txt" &&
    cmp -s <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt"); then
-	report "cheats:off" PASS "17 buttons active without the setting (33 with it); every cheat held for 30 steps on the title changes nothing"
+	report "cheats:off" PASS "15 buttons active without the setting (31 with it); every cheat held for 30 steps on the title changes nothing"
 else
 	report "cheats:off" FAIL "$(grep activeButtons "$work/nocheats-plain.txt") / $(grep activeButtons "$work/cheats.box.txt"); $(diff <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt") | head -2 | tr '\n' ' ')"
 fi
@@ -668,17 +672,21 @@ if grep -q "^loadError=the project's savestate OLD.SAV is not an SDLPoP quicksav
 else
 	report "slot:savestate-refused" FAIL "$(grep -m1 . "$work/bs1.txt") / $(grep -m1 . "$work/bs2.txt")"
 fi
-# the original game's own saved game: Load Game on the title resumes it
-wd="$(workdir savegame '{"enable_copyprot":false}')"
-printf '\036\000\317\002\005\000\004\000' > "$wd/MY.SAV"; printf '{"savegame":["MY.SAV"]}' > "$wd/slots"
-boxed "$wd" --frames 700 --press 300:l:1 --trace "$work/savegame.trace" --trace-props "Level.Current,Time.Minutes Left,Kid.HP" > /dev/null 2>&1
-head -c 5 "$wd/MY.SAV" > "$wd/SHORT.SAV"; printf '{"savegame":["SHORT.SAV"]}' > "$wd/slots"
-boxed "$wd" --frames 1 > "$work/sg2.txt" 2>/dev/null
-if [ "$(at "$work/savegame.trace" 699 1)" = "5" ] && [ "$(at "$work/savegame.trace" 699 2)" = "30" ] && [ "$(at "$work/savegame.trace" 699 3)" = "4" ] &&
-   grep -q "^loadError=the project's saved game SHORT.SAV is 5 bytes; a Prince of Persia PRINCE.SAV is 8" "$work/sg2.txt"; then
-	report "slot:savegame" PASS "a PRINCE.SAV of level 5, 30 minutes, 4 hit points: Load Game on the title resumes it; a 5-byte one is refused"
+# the hall of fame's name is the player_name setting, entered by the game
+# itself: level 14 poked in, its two gates made floor, the prince runs left
+# to the princess, and the won game's time goes in under the name
+wd="$(workdir hofname '{"enable_copyprot":false,"player_name":"Sergio"}')"
+boxed "$wd" --frames 3300 --press 400:S:2 --poke "420:Level.Next=14" --poke "470:Room 3.Tile[19]=1" --poke "470:Room 1.Tile[19]=1" \
+	--press 480:L:400 --dump-domain "Hall of Fame" "$work/hof.bin" --screenshot "2799:$work/hofname.tga" \
+	--trace "$work/hofname.trace" --trace-props "Level.Current,Hall of Fame.Minutes[0]" > /dev/null 2>&1
+png hofname
+wd="$(workdir hofempty '{"player_name":" "}')"
+boxed "$wd" --frames 1 > "$work/hofempty.txt" 2>/dev/null
+if [ "$(head -c 25 "$work/hof.bin" 2>/dev/null | tr -d '\0')" = "Sergio" ] && [ "$(at "$work/hofname.trace" 3299 2)" = "60" ] &&
+   grep -q "^loadError=the Player Name (Hall of Fame) setting has nothing the game can show" "$work/hofempty.txt"; then
+	report "settings:player-name" PASS "a won game (60 minutes left) enters Sergio in the hall of fame by itself (build/gate/hofname.png); a blank name is refused"
 else
-	report "slot:savegame" FAIL "level $(at "$work/savegame.trace" 699 1), minutes $(at "$work/savegame.trace" 699 2), HP $(at "$work/savegame.trace" 699 3); $(grep -m1 . "$work/sg2.txt")"
+	report "settings:player-name" FAIL "name [$(head -c 25 "$work/hof.bin" 2>/dev/null | tr -d '\0')], minutes $(at "$work/hofname.trace" 3299 2); $(grep -m1 . "$work/hofempty.txt")"
 fi
 
 # ------------------------------------------------------------------ 7. the package

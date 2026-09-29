@@ -33,8 +33,6 @@ enum PopButton
 	POP_BTN_RESTART_LEVEL,  /* Ctrl+A */
 	POP_BTN_RESTART_GAME,   /* Ctrl+R */
 	POP_BTN_NEXT_LEVEL,     /* Shift+L */
-	POP_BTN_SAVE_GAME,      /* Ctrl+G */
-	POP_BTN_LOAD_GAME,      /* Ctrl+L */
 	POP_BTN_SOUND_ON_OFF,          /* Ctrl+S */
 	POP_BTN_VERSION,        /* Ctrl+V */
 	POP_BTN_JOYSTICK_MODE,       /* Ctrl+J */

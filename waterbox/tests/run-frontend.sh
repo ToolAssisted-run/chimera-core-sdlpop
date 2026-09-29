@@ -194,7 +194,7 @@ else
 	report "gui:project" FAIL "status $(meta gui status) $(meta gui detail) (build/frontend/gui.log)"
 fi
 
-# with the cheats setting the project has the cheats' 16 columns as well (33),
+# with the cheats setting the project has the cheats' 16 columns as well (31),
 # and one of them pressed - More Time on row 50 - reaches the game: the route
 # ends with 61 minutes, as the reference pressing the same key does
 mkdir -p "$work/nativecheats"; cp "$work/native/"* "$work/nativecheats/"
@@ -205,7 +205,7 @@ python3 "$here/make-project.py" "$pkg" "$work/cheats.chimeraProject" "$frames" -
 	--settings "$csettings" --press "50:Cheat More Time"
 gui cheatsgui "$config" "$work/cheats.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
 ncols="$(python3 -c "import json; p = json.load(open('$work/cheats.chimeraProject')); print(p['input'].splitlines()[1].count('|'))")"
-if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "33" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
+if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "31" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
    ! cmp -s "$work/native.gs.bin" "$work/cheats.gs.bin"; then
 	report "gui:cheats-project" PASS "a project with the cheats on ($ncols columns): More Time on row 50 reaches the game, Game State is the reference's"
 else

@@ -56,8 +56,7 @@ BUTTON_NAMES = {
     "POP_BTN_UP": "Up", "POP_BTN_DOWN": "Down", "POP_BTN_LEFT": "Left", "POP_BTN_RIGHT": "Right",
     "POP_BTN_SHIFT": "Shift", "POP_BTN_ENTER": "Enter",
     "POP_BTN_PAUSE": "Pause", "POP_BTN_SHOW_TIME": "Show Time", "POP_BTN_RESTART_LEVEL": "Restart Level",
-    "POP_BTN_RESTART_GAME": "Restart Game", "POP_BTN_NEXT_LEVEL": "Next Level", "POP_BTN_SAVE_GAME": "Save Game",
-    "POP_BTN_LOAD_GAME": "Load Game", "POP_BTN_SOUND_ON_OFF": "Sound On/Off", "POP_BTN_VERSION": "Version",
+    "POP_BTN_RESTART_GAME": "Restart Game", "POP_BTN_NEXT_LEVEL": "Next Level", "POP_BTN_SOUND_ON_OFF": "Sound On/Off", "POP_BTN_VERSION": "Version",
     "POP_BTN_JOYSTICK_MODE": "Joystick Mode", "POP_BTN_KEYBOARD_MODE": "Keyboard Mode",
     "POP_BTN_CHEAT_SHOW_ROOMS": "Cheat Show Rooms", "POP_BTN_CHEAT_SHOW_CORNER_ROOMS": "Cheat Show Corner Rooms",
     "POP_BTN_CHEAT_LESS_TIME": "Cheat Less Time", "POP_BTN_CHEAT_MORE_TIME": "Cheat More Time",
@@ -148,7 +147,7 @@ def main():
         "lag": {"inputWasRead": "InputWasRead"},
         "input": {
             "name": "Prince of Persia",
-            "_comment": "The DOS game's keyboard: the arrows, Shift (grab, pick up, strike) and Enter (restart after dying, as Shift does); the game's commands, each its own button (Pause is Esc, Show Time is Space, Restart Level is Ctrl+A, Restart Game Ctrl+R, Next Level Shift+L, Save Game Ctrl+G, Load Game Ctrl+L, Sound On/Off Ctrl+S, Version Ctrl+V, Joystick Mode Ctrl+J, Keyboard Mode Ctrl+K); and the cheats the game has when started with its cheat word, active only with the cheats setting on (Show Rooms C, Show Corner Rooms Shift+C, Less Time and More Time keypad - and +, Revive R, Kill Guard K, Flip Screen Shift+I, Feather Fall Shift+W, Look Left/Right/Up/Down H/J/U/N, Look Back Ctrl+B, Blind Mode Shift+B, Add Hit Point Shift+S, Add Max Hit Point Shift+T). Ctrl+Q (quit) is left out: it ends the program.",
+            "_comment": "The DOS game's keyboard: the arrows, Shift (grab, pick up, strike) and Enter (restart after dying, as Shift does); the game's commands, each its own button (Pause is Esc, Show Time is Space, Restart Level is Ctrl+A, Restart Game Ctrl+R, Next Level Shift+L, Sound On/Off Ctrl+S, Version Ctrl+V, Joystick Mode Ctrl+J, Keyboard Mode Ctrl+K); and the cheats the game has when started with its cheat word, active only with the cheats setting on (Show Rooms C, Show Corner Rooms Shift+C, Less Time and More Time keypad - and +, Revive R, Kill Guard K, Flip Screen Shift+I, Feather Fall Shift+W, Look Left/Right/Up/Down H/J/U/N, Look Back Ctrl+B, Blind Mode Shift+B, Add Hit Point Shift+S, Add Max Hit Point Shift+T). Left out: Ctrl+Q (it ends the program) and the game's saved games, Ctrl+G and Ctrl+L. The hall of fame's name is the player_name setting, entered by itself.",
             "buttons": buttons(),
         },
         "settings": [
@@ -166,6 +165,13 @@ def main():
                 "type": "bool",
                 "default": False,
                 "description": "Start the game with its cheat word, as the DOS game was started from the command line (megahit; 1.3 and 1.4 used improved). The cheats' buttons exist only with this on. It also lets Next Level (Shift+L) skip any level without cutting the time to 15 minutes.",
+            },
+            {
+                "name": "player_name",
+                "display": "Player Name (Hall of Fame)",
+                "type": "string",
+                "default": "Chimera",
+                "description": "The name a won game enters in the hall of fame, when its time earns a place there - as the player would have typed it (the printable characters, as many as the box holds, up to 24). There are no letter keys: the game enters it by itself.",
             },
             {
                 "name": "sound",

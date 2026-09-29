@@ -6,12 +6,13 @@ core**: the game itself, stepped one game step at a time in miniBox's sandbox,
 packaged as `sdlpop.chimeraCore`. It is the first core of its kind
 (`"kind": "game"`, see Chimera's `docs/game-cores.md`).
 
-**Built on upstream, with two small patches.** SDLPoP and SDL 2 are
+**Built on upstream, with three small patches.** SDLPoP and SDL 2 are
 submodules, compiled from source into the core. Patch 0001 adds one call at
 each place the DOS game waited without saying for how long or looked at the
 controls; the game runs on a stack of its own and hands control back where it
 would have waited. Patch 0002 lets the core give the game its release's copy
-protection (each release's manual asks other words) and its own Ctrl+V line.
+protection (each release's manual asks other words) and its own Ctrl+V line;
+patch 0003 enters the hall of fame's name from a setting.
 
 ## What it is
 
@@ -40,9 +41,12 @@ protection (each release's manual asks other words) and its own Ctrl+V line.
   to SDLPoP as the key events a keyboard would send (a Ctrl or Shift command
   holds its modifier as a key does): Up, Down, Left, Right, Shift and Enter;
   the commands - Pause (Esc), Show Time (Space), Restart Level (Ctrl+A),
-  Restart Game (Ctrl+R), Next Level (Shift+L), Save Game (Ctrl+G), Load Game
-  (Ctrl+L), Sound On/Off (Ctrl+S), Version (Ctrl+V), Joystick Mode (Ctrl+J)
-  and Keyboard Mode (Ctrl+K); Ctrl+Q is left out, as it ends the program.
+  Restart Game (Ctrl+R), Next Level (Shift+L), Sound On/Off (Ctrl+S), Version
+  (Ctrl+V), Joystick Mode (Ctrl+J) and Keyboard Mode (Ctrl+K). Left out:
+  Ctrl+Q, which ends the program, and the game's own saved games (Ctrl+G,
+  Ctrl+L). There are no letter keys: the name a won game enters in the hall of
+  fame is the **Player Name (Hall of Fame)** setting ("Chimera" by default),
+  entered by the game itself.
 - **Cheats**, with the `cheats` setting (off by default): the game starts with
   its cheat word, as from the DOS command line, and 16 more buttons exist -
   Show Rooms, Show Corner Rooms, Less Time, More Time, Revive, Kill Guard,
@@ -57,17 +61,15 @@ protection (each release's manual asks other words) and its own Ctrl+V line.
   guards' fighting tables and level colours the game plays by, in place, as
   further domains, described as arrays and bit fields.
 - **Settings** that change play, recorded in the project: the version, the
-  cheats, the sound card, the random seed, copy protection (on, as in the
+  cheats, the player name, the sound card, the random seed, copy protection (on, as in the
   original), the first level, the minutes, the hit points, skipping the title,
   and SDLPoP's fixes and enhancements. **Defaults are the original game**:
   every fix and enhancement is off, each one's own switch as well as the
   master switch.
 - **Files a project may add**: a custom level set (a LEVELS.DAT played in
-  place of the original levels); a saved game of the original's own
-  (PRINCE.SAV, which Load Game on the title resumes); and a **savestate** - an
-  SDLPoP quicksave (QUICKSAVE.SAV) the run starts from. The files the game
-  writes itself (its saved game, its hall of fame) live in guest memory, so a
-  savestate carries them.
+  place of the original levels) and a **savestate** - an SDLPoP quicksave
+  (QUICKSAVE.SAV) the run starts from. The files the game writes itself (its
+  hall of fame) live in guest memory, so a savestate carries them.
 
 ## Building
 

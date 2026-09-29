@@ -116,8 +116,6 @@ static int gate_key_index(char c)
 	case 'T': return POP_BTN_SHOW_TIME;
 	case 'G': return POP_BTN_RESTART_GAME;
 	case 'N': return POP_BTN_NEXT_LEVEL;
-	case 's': return POP_BTN_SAVE_GAME;
-	case 'l': return POP_BTN_LOAD_GAME;
 	case 'o': return POP_BTN_SOUND_ON_OFF;
 	case 'v': return POP_BTN_VERSION;
 	case 'j': return POP_BTN_JOYSTICK_MODE;

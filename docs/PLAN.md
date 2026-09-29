@@ -242,11 +242,15 @@ has it; the savestate slot names a level instead, as the DOS game's
 Each key the game reads is its own button (the wire order is the driver's
 `PopButton`): Up, Down, Left, Right, Shift, Enter; the commands Pause (Esc),
 Show Time (Space), Restart Level (Ctrl+A), Restart Game (Ctrl+R), Next Level
-(Shift+L), Save Game (Ctrl+G), Load Game (Ctrl+L), Sound On/Off (Ctrl+S),
-Version (Ctrl+V), Joystick Mode (Ctrl+J), Keyboard Mode (Ctrl+K); and with the
-cheats setting, 16 cheats (C, Shift+C, keypad - and +, R, K, Shift+I, Shift+W,
-H, J, U, N, Ctrl+B, Shift+B, Shift+S, Shift+T). Ctrl+Q is left out: it ends
-the program. SDLPoP's own keys (F6/F9, Tab, Backspace, the backtick, F12,
+(Shift+L), Sound On/Off (Ctrl+S), Version (Ctrl+V), Joystick Mode (Ctrl+J),
+Keyboard Mode (Ctrl+K); and with the cheats setting, 16 cheats (C, Shift+C,
+keypad - and +, R, K, Shift+I, Shift+W, H, J, U, N, Ctrl+B, Shift+B, Shift+S,
+Shift+T). Left out: Ctrl+Q (it ends the program) and the game's own saved
+games, Ctrl+G and Ctrl+L (user-decided 2026-09-29: no native saves, no
+menus). There are no letter keys; the hall of fame's name is the
+`player_name` setting ("Chimera", user-decided), which patch 0003 enters in
+place of `input_str`'s wait for keys - the printable characters, as many as fit
+the box, up to 24. A blank one is refused at Init. SDLPoP's own keys (F6/F9, Tab, Backspace, the backtick, F12,
 Ctrl+C) are on no button.
 
 A modifier is a real key shared by every button that holds it: a Ctrl or Shift
@@ -260,14 +264,15 @@ Shift keys back if still held) - SDL's timers run on a thread, so the driver
 runs them on the game's clock when a step reaching their time resumes, and
 `SDL_GetKeyboardState` answers with the keys the buttons hold (before, the
 wrapped `SDL_AddTimer` returned 0 and SDLPoP quit on Shift+L). And the files
-the game writes - PRINCE.SAV (Ctrl+G), PRINCE.HOF, QUICKSAVE.SAV - live in
+the game writes - PRINCE.SAV (unreachable now), PRINCE.HOF, QUICKSAVE.SAV - live in
 guest memory: `getenv("SDLPOP_SAVE_PATH")` is "saves", and fopen of
 "saves/NAME" is an in-memory file, so a savestate carries them.
 
-## Slots: savegame and savestate (2026-09-29)
+## Slot: savestate (2026-09-29)
 
-- `savegame`: a PRINCE.SAV (8 bytes: minutes, ticks, level, hit points), put
-  where the game's Load Game (Ctrl+L on the title) finds it.
+(A `savegame` slot - a PRINCE.SAV for Load Game - was added and taken out the
+same day, with the game's own saved games.)
+
 - `savestate`: an SDLPoP quicksave (QUICKSAVE.SAV, "V1.16b4 " and then
   `quick_process`'s variables; its size is checked against this build's).
   The run starts from it on its first tick: Init sets `need_quick_load`, as F9
@@ -313,6 +318,9 @@ A whole SDLPoP mod folder is not supported.
 
 ## The patches
 
+`patches/0003` (2026-09-29), under `#ifdef CHIMERA_CORE`: the hall of fame's
+name is `chimera_hof_name()`, entered as `input_str` would have taken it.
+
 `patches/0002` (2026-09-29), under `#ifdef CHIMERA_CORE`: the copy
 protection's four tables writable (`COPYPROT_TABLE`), the on-screen question
 in "PAGE LINE WORD" order when `chimera_copyprot_page_first()`, and Ctrl+V
@@ -337,7 +345,7 @@ seen to fail on a break of its own:
 | 1.1 asking WORD first | releases:copy-protection |
 | 1.3's Ctrl+V line "V1.4" | releases:version-line |
 | no quickload of the savestate | slot:savestate |
-| the saved game never reaching the game | slot:savegame |
+| the hall of fame name hook returning "" | settings:player-name |
 | SDL_AddTimer returning 0 (Shift+L quits) | commands:effects, cheats:effects, releases:copy-protection |
 | no cheat word | cheats:effects, cheats:pictures |
 | every button active | cheats:off |

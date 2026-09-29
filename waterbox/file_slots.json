@@ -1,5 +1,5 @@
 {
-  "_comment": "A Prince of Persia project needs no file of its own: the game is the release's original data, which the project brings as firmware (the core's firmware list, by the version setting). A project may add a custom level set, a saved game of the original game's own, and an SDLPoP quicksave to start from.",
+  "_comment": "A Prince of Persia project needs no file of its own: the game is the release's original data, which the project brings as firmware (the core's firmware list, by the version setting). A project may add a custom level set and an SDLPoP quicksave to start from.",
   "slots": [
     {
       "id": "levels",
@@ -10,16 +10,6 @@
         "dat"
       ],
       "help": "A LEVELS.DAT of a custom level set (from a level editor or a mod), played in place of the original levels; the rest of the game is still the release's original data. Leave it empty for the original game."
-    },
-    {
-      "id": "savegame",
-      "title": "Saved game",
-      "min": 0,
-      "max": 1,
-      "formats": [
-        "sav"
-      ],
-      "help": "A PRINCE.SAV the original game saved (Ctrl+G, from level 3 on): the level, the minutes left and the hit points. Load Game (Ctrl+L on the title) resumes it. The game's own saves during the run are kept in the run, not written anywhere."
     },
     {
       "id": "savestate",

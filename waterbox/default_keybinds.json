@@ -2,7 +2,7 @@
   "_comment": [
     "Default bindings for Prince of Persia: the keyboard as the DOS game has it - the arrows, Shift, Enter, and each command and cheat on the game's own key -",
     "except Restart Game, whose Ctrl+R is Chimera's Reboot Core (no key; bind one); the time cheats are on the keypad's - and +, as in the game.",
-    "Ctrl+G, Ctrl+B, R and Shift+S are also TAStudio's own keys while its window has the focus.",
+    "Ctrl+B, R and Shift+S are also TAStudio's own keys while its window has the focus.",
     "The first pad: the d-pad and left stick as the arrows, A as Shift, Start as Enter, Back as Restart Level."
   ],
   "AllTrollers": {
@@ -18,8 +18,6 @@
       "Restart Level": "Ctrl+A, J1 B9, X1 Back",
       "Restart Game": "",
       "Next Level": "Shift+L",
-      "Save Game": "Ctrl+G",
-      "Load Game": "Ctrl+L",
       "Sound On/Off": "Ctrl+S",
       "Version": "Ctrl+V",
       "Joystick Mode": "Ctrl+J",

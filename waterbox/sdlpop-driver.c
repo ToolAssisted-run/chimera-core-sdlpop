@@ -295,6 +295,7 @@ typedef struct
 	const pop_release *release;
 	int cheats;               /* the game started with its cheat word */
 	int from_savestate;       /* the run starts from the "savestate" slot's quicksave */
+	char player_name[64];     /* the hall of fame's name for a won game */
 	char *argv[5];
 	long steps;               /* FrameAdvance calls so far */
 } pop_driver;
@@ -746,28 +747,13 @@ static int count_quick(void *data, size_t size)
 /* patch 0002's hooks: the release's question on screen, and its Ctrl+V line */
 int chimera_copyprot_page_first(void) { return g.release->page_first; }
 const char *chimera_version_text(void) { return g.release->version_line; }
+/* patch 0003's: the hall of fame name (player_name, checked at Init) */
+const char *chimera_hof_name(void) { return g.player_name; }
 
-/* The two files a project may start from: a saved game of the original game's
- * own (PRINCE.SAV, which Load Game - Ctrl+L on the title - resumes) and an
- * SDLPoP quicksave (QUICKSAVE.SAV), which the run starts from. */
+/* A file a project may start from: an SDLPoP quicksave (QUICKSAVE.SAV). */
 static int load_slots(char *err, int errsize)
 {
 	char path[256];
-	if (wbx_slot_first("savegame", path, sizeof path))
-	{
-		long n = load_save(SAVE_GAME, path);
-		if (n < 0)
-		{
-			snprintf(err, (size_t)errsize, "the project's saved game %s is not there", path);
-			return 0;
-		}
-		/* the minutes, the ticks, the level and the hit points, two bytes each */
-		if (n != 8)
-		{
-			snprintf(err, (size_t)errsize, "the project's saved game %s is %ld bytes; a Prince of Persia PRINCE.SAV is 8", path, n);
-			return 0;
-		}
-	}
 	if (wbx_slot_first("savestate", path, sizeof path))
 	{
 		long n = load_save(SAVE_QUICK, path);
@@ -808,6 +794,16 @@ int popdrv_init(char *err, int errsize)
 		return 0;
 	}
 	g.cheats = wbx_setting_bool("cheats", 0) != 0;
+	/* the name a won game enters in the hall of fame: the game takes the
+	 * printable characters, and wants at least one */
+	if (wbx_setting_str("player_name", g.player_name, sizeof g.player_name) < 0) strcpy(g.player_name, "Chimera");
+	int printable = 0;
+	for (const char *c = g.player_name; *c; c++) printable |= *c >= 0x20 && *c <= 0x7E && *c != ' ';
+	if (!printable)
+	{
+		snprintf(err, (size_t)errsize, "the Player Name (Hall of Fame) setting has nothing the game can show - give it a name");
+		return 0;
+	}
 
 	char sound[32];
 	if (wbx_setting_str("sound", sound, sizeof sound) < 0) strcpy(sound, "digital");
@@ -907,8 +903,6 @@ static const struct { SDL_Scancode key; int mods; } k_keys[POP_BTN_COUNT] = {
 	[POP_BTN_RESTART_LEVEL] = { SDL_SCANCODE_A, MOD_CTRL },
 	[POP_BTN_RESTART_GAME] = { SDL_SCANCODE_R, MOD_CTRL },
 	[POP_BTN_NEXT_LEVEL] = { SDL_SCANCODE_L, MOD_SHIFT },
-	[POP_BTN_SAVE_GAME] = { SDL_SCANCODE_G, MOD_CTRL },
-	[POP_BTN_LOAD_GAME] = { SDL_SCANCODE_L, MOD_CTRL },
 	[POP_BTN_SOUND_ON_OFF] = { SDL_SCANCODE_S, MOD_CTRL },
 	[POP_BTN_VERSION] = { SDL_SCANCODE_V, MOD_CTRL },
 	[POP_BTN_JOYSTICK_MODE] = { SDL_SCANCODE_J, MOD_CTRL },

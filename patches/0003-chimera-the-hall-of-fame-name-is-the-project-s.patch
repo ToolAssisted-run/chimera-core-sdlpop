@@ -1,0 +1,35 @@
+Subject: chimera: the hall of fame name is the project's
+
+A Chimera core has no letter keys: the name a won game enters in the hall
+of fame is a setting of the project. Under CHIMERA_CORE it is entered as
+input_str would have taken it - the printable characters, as many as fit
+the box, up to 24 - in place of the wait for keys.
+
+--- a/src/seg001.c
++++ b/src/seg001.c
+@@ -621,7 +621,25 @@
+ 		draw_rect(&rect, bgcolor);
+ 		fade_in_2(offscreen_surface, 0x1800);
+ 		current_target_surface = onscreen_surface_;
++#ifdef CHIMERA_CORE
++		// Chimera: the project's player name, entered as the keys would have typed
++		// it - the characters input_str takes, as many as fit the box
++		{
++			extern int get_char_width(byte character); // seg009.c
++			const char* name = chimera_hof_name();
++			short xpos = rect.left + 4, length = 0;
++			for (; *name && length < 24; ++name) {
++				byte c = (byte) *name;
++				if (c < 0x20 || c > 0x7E) continue;
++				if (get_char_width('_') + get_char_width(c) + xpos >= rect.right) break;
++				hof[hof_index].name[length++] = (char) c;
++				xpos += get_char_width(c);
++			}
++			hof[hof_index].name[length] = 0;
++		}
++#else
+ 		while(input_str(&rect, hof[hof_index].name, 24, "", 0, 4, color, bgcolor) <= 0);
++#endif
+ 		restore_peel(peel);
+ 		show_hof_text(&hof_rects[hof_index], -1, 0, hof[hof_index].name);
+ 		hof_write();

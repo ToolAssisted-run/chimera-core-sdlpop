@@ -1,4 +1,4 @@
-/* chimera-hooks.h - the seams patches 0001 and 0002 put into SDLPoP.
+/* chimera-hooks.h - the seams patches 0001 to 0003 put into SDLPoP.
  *
  * SDLPoP's common.h includes this when CHIMERA_CORE is defined; nothing else
  * of upstream sees it. Each call is one line at a place where the DOS game
@@ -21,6 +21,12 @@
  *   chimera_copyprot_page_first()  the question on screen reads "PAGE LINE
  *                              WORD" (1.1 and later), not "WORD LINE PAGE".
  *   chimera_version_text()     the line Ctrl+V shows, the release's own.
+ *
+ * And patch 0003's:
+ *
+ *   chimera_hof_name()         the name a won game enters in the hall of fame
+ *                              (the player_name setting): there are no letter
+ *                              keys to type it with.
  */
 #ifndef CHIMERA_HOOKS_H
 #define CHIMERA_HOOKS_H
@@ -30,5 +36,6 @@ void chimera_input_read(void);
 void chimera_idle_step(void);
 int chimera_copyprot_page_first(void);
 const char *chimera_version_text(void);
+const char *chimera_hof_name(void);
 
 #endif

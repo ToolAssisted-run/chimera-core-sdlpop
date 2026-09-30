@@ -39,8 +39,10 @@ patch 0003 enters the hall of fame's name from a setting.
   just run; a step that did not read the controls is a lag frame.
 - **The controls are the game's keyboard**, each key its own button, delivered
   to SDLPoP as the key events a keyboard would send (a Ctrl or Shift command
-  holds its modifier as a key does): Up, Down, Left, Right, Shift and Enter;
-  the commands - Pause (Esc), Show Time (Space), Restart Level (Ctrl+A),
+  holds its modifier as a key does): the prince's, P1 Up, Down, Left, Right,
+  Shift and Enter - after the separator in a movie's rows
+  (`|commands|P1 Up Down Left Right Shift Enter|`), with the commands and the
+  cheats before it; the commands - Pause (Esc), Show Time (Space), Restart Level (Ctrl+A),
   Restart Game (Ctrl+R), Next Level (Shift+L), Sound On/Off (Ctrl+S), Version
   (Ctrl+V), Joystick Mode (Ctrl+J) and Keyboard Mode (Ctrl+K). Left out:
   Ctrl+Q, which ends the program, and the game's own saved games (Ctrl+G,

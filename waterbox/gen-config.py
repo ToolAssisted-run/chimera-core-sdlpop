@@ -53,8 +53,10 @@ def buttons():
 
 
 BUTTON_NAMES = {
-    "POP_BTN_UP": "Up", "POP_BTN_DOWN": "Down", "POP_BTN_LEFT": "Left", "POP_BTN_RIGHT": "Right",
-    "POP_BTN_SHIFT": "Shift", "POP_BTN_ENTER": "Enter",
+    # the prince's keys are P1's: Chimera logs them after the separator, the commands and the cheats before it
+    # (|commands|inputs|)
+    "POP_BTN_UP": "P1 Up", "POP_BTN_DOWN": "P1 Down", "POP_BTN_LEFT": "P1 Left", "POP_BTN_RIGHT": "P1 Right",
+    "POP_BTN_SHIFT": "P1 Shift", "POP_BTN_ENTER": "P1 Enter",
     "POP_BTN_PAUSE": "Pause", "POP_BTN_SHOW_TIME": "Show Time", "POP_BTN_RESTART_LEVEL": "Restart Level",
     "POP_BTN_RESTART_GAME": "Restart Game", "POP_BTN_NEXT_LEVEL": "Next Level", "POP_BTN_SOUND_ON_OFF": "Sound On/Off", "POP_BTN_VERSION": "Version",
     "POP_BTN_JOYSTICK_MODE": "Joystick Mode", "POP_BTN_KEYBOARD_MODE": "Keyboard Mode",

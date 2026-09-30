@@ -7,12 +7,12 @@
   ],
   "AllTrollers": {
     "Prince of Persia": {
-      "Up": "Up, J1 POV1U, X1 DpadUp, X1 LStickUp",
-      "Down": "Down, J1 POV1D, X1 DpadDown, X1 LStickDown",
-      "Left": "Left, J1 POV1L, X1 DpadLeft, X1 LStickLeft",
-      "Right": "Right, J1 POV1R, X1 DpadRight, X1 LStickRight",
-      "Shift": "Shift, LeftShift, RightShift, J1 B1, X1 A",
-      "Enter": "Enter, J1 B10, X1 Start",
+      "P1 Up": "Up, J1 POV1U, X1 DpadUp, X1 LStickUp",
+      "P1 Down": "Down, J1 POV1D, X1 DpadDown, X1 LStickDown",
+      "P1 Left": "Left, J1 POV1L, X1 DpadLeft, X1 LStickLeft",
+      "P1 Right": "Right, J1 POV1R, X1 DpadRight, X1 LStickRight",
+      "P1 Shift": "Shift, LeftShift, RightShift, J1 B1, X1 A",
+      "P1 Enter": "Enter, J1 B10, X1 Start",
       "Pause": "Escape",
       "Show Time": "Space",
       "Restart Level": "Ctrl+A, J1 B9, X1 Back",

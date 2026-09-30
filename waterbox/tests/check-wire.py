@@ -30,7 +30,7 @@ if len(enum) != len(buttons):
     sys.exit(f"driver has {len(enum)} buttons, waterbox.config {len(buttons)}")
 norm = lambda s: re.sub(r"[^A-Z0-9]", "", s.upper())
 for i, (e, b) in enumerate(zip(enum, buttons)):
-    if norm(e.replace("POP_BTN_", "")) != norm(b):
+    if norm(e.replace("POP_BTN_", "")) != norm(b.removeprefix("P1 ")):
         sys.exit(f"button {i}: driver {e} vs config '{b}'")
 
 with tempfile.TemporaryDirectory() as tmp:

@@ -31,14 +31,11 @@ def sha1(path):
 def press(rows, spec, buttons):
     """--press FRAME:BUTTON NAME: that button held on that row too."""
     frame, name = spec.split(":", 1)
-    i = buttons.index(name)
-    r = list(rows[int(frame)])
-    r[1 + i] = "x"
-    rows[int(frame)] = "".join(r)
+    rows[int(frame)][buttons.index(name)] = "x"
 
 
 def rows_from(movie, frames, buttons):
-    """The log rows over the buttons the core has active: the route's
+    """The log rows over the buttons the core has active (a list of characters each, in the log's order): the route's
     |r|LRUDS| letters put under their buttons' names."""
     at = {name: i for i, name in enumerate(buttons)}
     rows = []
@@ -48,14 +45,23 @@ def rows_from(movie, frames, buttons):
                 continue
             r = line.strip()
             row = ["."] * len(buttons)
-            for name, held, ch in (("Up", r[5] == "U", "U"), ("Down", r[6] == "D", "D"), ("Left", r[3] == "L", "L"),
-                                   ("Right", r[4] == "R", "R"), ("Shift", r[7] == "S", "S"), ("Restart Level", r[1] == "r", "A")):
+            for name, held, ch in (("P1 Up", r[5] == "U", "U"), ("P1 Down", r[6] == "D", "D"), ("P1 Left", r[3] == "L", "L"),
+                                   ("P1 Right", r[4] == "R", "R"), ("P1 Shift", r[7] == "S", "S"), ("Restart Level", r[1] == "r", "A")):
                 if held:
                     row[at[name]] = ch
-            rows.append("|" + "".join(row) + "|")
+            rows.append(row)
     while len(rows) < frames:
-        rows.append("|" + "." * len(buttons) + "|")
+        rows.append(["."] * len(buttons))
     return rows[:frames]
+
+
+def render(row, groups):
+    """A log row: each group's characters, between separators (|commands|P1|)."""
+    out, i = "|", 0
+    for g in groups:
+        out += "".join(row[i:i + len(g)]) + "|"
+        i += len(g)
+    return out
 
 
 def holds(cond, settings, slots):
@@ -92,13 +98,17 @@ def main():
     settings.update(json.loads(a.settings))
     # the cheats' buttons are active only with the cheats setting on
     # (IsButtonActive), and the log has only the active ones
-    buttons = [b for b in cfg["input"]["buttons"] if settings.get("cheats") or not b.startswith("Cheat ")]
+    active = [b for b in cfg["input"]["buttons"] if settings.get("cheats") or not b.startswith("Cheat ")]
+    # the log's groups, as Chimera orders them: the buttons of no player (the commands, the cheats), then P1's
+    groups = [[b for b in active if not b.startswith("P1 ")], [b for b in active if b.startswith("P1 ")]]
+    buttons = groups[0] + groups[1]
     rows = rows_from(a.movie, a.frames, buttons)
     for spec in a.press:
         press(rows, spec, buttons)
+    rows = [render(r, groups) for r in rows]
     if a.log_out:
         open(a.log_out, "w").write("\n".join(rows) + "\n")
-    log = "[Input]\nLogKey:#" + "|".join(buttons) + "|\n" + "\n".join(rows) + "\n[/Input]\n"
+    log = "[Input]\nLogKey:" + "".join("#" + "".join(b + "|" for b in g) for g in groups) + "\n" + "\n".join(rows) + "\n[/Input]\n"
 
     files = []
     for spec in a.file:

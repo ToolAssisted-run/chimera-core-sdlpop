@@ -59,7 +59,6 @@ BUTTON_NAMES = {
     "POP_BTN_SHIFT": "P1 Shift", "POP_BTN_ENTER": "P1 Enter",
     "POP_BTN_PAUSE": "Pause", "POP_BTN_SHOW_TIME": "Show Time", "POP_BTN_RESTART_LEVEL": "Restart Level",
     "POP_BTN_RESTART_GAME": "Restart Game", "POP_BTN_NEXT_LEVEL": "Next Level", "POP_BTN_SOUND_ON_OFF": "Sound On/Off", "POP_BTN_VERSION": "Version",
-    "POP_BTN_JOYSTICK_MODE": "Joystick Mode", "POP_BTN_KEYBOARD_MODE": "Keyboard Mode",
     "POP_BTN_CHEAT_SHOW_ROOMS": "Cheat Show Rooms", "POP_BTN_CHEAT_SHOW_CORNER_ROOMS": "Cheat Show Corner Rooms",
     "POP_BTN_CHEAT_LESS_TIME": "Cheat Less Time", "POP_BTN_CHEAT_MORE_TIME": "Cheat More Time",
     "POP_BTN_CHEAT_REVIVE": "Cheat Revive", "POP_BTN_CHEAT_KILL_GUARD": "Cheat Kill Guard",
@@ -149,7 +148,7 @@ def main():
         "lag": {"inputWasRead": "InputWasRead"},
         "input": {
             "name": "Prince of Persia",
-            "_comment": "The DOS game's keyboard: the arrows, Shift (grab, pick up, strike) and Enter (restart after dying, as Shift does); the game's commands, each its own button (Pause is Esc, Show Time is Space, Restart Level is Ctrl+A, Restart Game Ctrl+R, Next Level Shift+L, Sound On/Off Ctrl+S, Version Ctrl+V, Joystick Mode Ctrl+J, Keyboard Mode Ctrl+K); and the cheats the game has when started with its cheat word, active only with the cheats setting on (Show Rooms C, Show Corner Rooms Shift+C, Less Time and More Time keypad - and +, Revive R, Kill Guard K, Flip Screen Shift+I, Feather Fall Shift+W, Look Left/Right/Up/Down H/J/U/N, Look Back Ctrl+B, Blind Mode Shift+B, Add Hit Point Shift+S, Add Max Hit Point Shift+T). Left out: Ctrl+Q (it ends the program) and the game's saved games, Ctrl+G and Ctrl+L. The hall of fame's name is the player_name setting, entered by itself.",
+            "_comment": "The DOS game's keyboard: the arrows, Shift (grab, pick up, strike) and Enter (restart after dying, as Shift does); the game's commands, each its own button (Pause is Esc, Show Time is Space, Restart Level is Ctrl+A, Restart Game Ctrl+R, Next Level Shift+L, Sound On/Off Ctrl+S, Version Ctrl+V); and the cheats the game has when started with its cheat word, active only with the cheats setting on (Show Rooms C, Show Corner Rooms Shift+C, Less Time and More Time keypad - and +, Revive R, Kill Guard K, Flip Screen Shift+I, Feather Fall Shift+W, Look Left/Right/Up/Down H/J/U/N, Look Back Ctrl+B, Blind Mode Shift+B, Add Hit Point Shift+S, Add Max Hit Point Shift+T). Left out: Ctrl+Q (it ends the program), the game's saved games (Ctrl+G and Ctrl+L), and Joystick Mode and Keyboard Mode (Ctrl+J, Ctrl+K), which mean nothing to a movie. The hall of fame's name is the player_name setting, entered by itself.",
             "buttons": buttons(),
         },
         "settings": [

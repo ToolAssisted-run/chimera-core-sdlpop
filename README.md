@@ -44,9 +44,9 @@ patch 0003 enters the hall of fame's name from a setting.
   (`|commands|P1 Up Down Left Right Shift Enter|`), with the commands and the
   cheats before it; the commands - Pause (Esc), Show Time (Space), Restart Level (Ctrl+A),
   Restart Game (Ctrl+R), Next Level (Shift+L), Sound On/Off (Ctrl+S), Version
-  (Ctrl+V), Joystick Mode (Ctrl+J) and Keyboard Mode (Ctrl+K). Left out:
-  Ctrl+Q, which ends the program, and the game's own saved games (Ctrl+G,
-  Ctrl+L). There are no letter keys: the name a won game enters in the hall of
+  (Ctrl+V). Left out: Ctrl+Q, which ends the program, Joystick Mode and
+  Keyboard Mode (Ctrl+J, Ctrl+K), which mean nothing to a movie, and the game's
+  own saved games (Ctrl+G, Ctrl+L). There are no letter keys: the name a won game enters in the hall of
   fame is the **Player Name (Hall of Fame)** setting ("Chimera" by default),
   entered by the game itself.
 - **Cheats**, with the `cheats` setting (off by default): the game starts with

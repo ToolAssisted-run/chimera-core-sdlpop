@@ -118,8 +118,6 @@ static int gate_key_index(char c)
 	case 'N': return POP_BTN_NEXT_LEVEL;
 	case 'o': return POP_BTN_SOUND_ON_OFF;
 	case 'v': return POP_BTN_VERSION;
-	case 'j': return POP_BTN_JOYSTICK_MODE;
-	case 'k': return POP_BTN_KEYBOARD_MODE;
 	/* the cheats */
 	case 'c': return POP_BTN_CHEAT_SHOW_ROOMS;
 	case 'C': return POP_BTN_CHEAT_SHOW_CORNER_ROOMS;

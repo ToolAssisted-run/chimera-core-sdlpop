@@ -258,10 +258,10 @@ test_args() {
 		speaker) args=(--press 400:S:2) ;;
 		# the command keys, each once, from level 3: Restart Level after the
 		# prince has run, Restart Game to the title, a new game, Next Level
-		commands) args=(--press 400:S:2 --press 530:T:1 --press 560:v:1 --press 590:j:1 --press 620:k:1
+		commands) args=(--press 400:S:2 --press 530:T:1 --press 560:v:1
 			--press 650:o:1 --press 700:P:1 --press 750:T:1 --press 760:R:15 --press 780:A:1 --press 800:G:1 --press 1000:S:2 --press 1100:N:1
 			--screenshot "535:$work/cmd-time.tga" --screenshot "565:$work/cmd-version.tga"
-			--screenshot "595:$work/cmd-joystick.tga" --screenshot "625:$work/cmd-keyboard.tga" --screenshot "655:$work/cmd-sound.tga"
+			--screenshot "655:$work/cmd-sound.tga"
 			--screenshot "720:$work/cmd-paused.tga" --audio "$work/commands.pcm") ;;
 		# every cheat, from level 1 (Revive once the prince is dead), and Kill
 		# Guard at level 2's first guard, reached by Next Level
@@ -574,9 +574,9 @@ fi
 # ------------------------------------------------------------------ 6d. the commands
 ct="$work/commands.trace"
 # the game's messages on its bottom line, as the pictures show them
-msgs=""; for m in time version joystick keyboard sound paused; do png "cmd-$m"; msgs="$msgs$(strip "$work/cmd-$m.tga") "; done
-if [ "$msgs" = "1cec7b6cf820f05e a0d6dc697fd665b6 f6be5b5f39e8dd9e b862ed0748d96462 089b876412125279 27a495d1b6ce69bb " ]; then
-	report "commands:messages" PASS "60 MINUTES LEFT, PRINCE OF PERSIA  V1.0, JOYSTICK NOT FOUND, KEYBOARD MODE, SOUND OFF, GAME PAUSED"
+msgs=""; for m in time version sound paused; do png "cmd-$m"; msgs="$msgs$(strip "$work/cmd-$m.tga") "; done
+if [ "$msgs" = "1cec7b6cf820f05e a0d6dc697fd665b6 089b876412125279 27a495d1b6ce69bb " ]; then
+	report "commands:messages" PASS "60 MINUTES LEFT, PRINCE OF PERSIA  V1.0, SOUND OFF, GAME PAUSED"
 else
 	report "commands:messages" FAIL "strips $msgs(build/gate/cmd-*.png)"
 fi

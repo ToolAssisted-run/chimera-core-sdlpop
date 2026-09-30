@@ -35,8 +35,6 @@ enum PopButton
 	POP_BTN_NEXT_LEVEL,     /* Shift+L */
 	POP_BTN_SOUND_ON_OFF,          /* Ctrl+S */
 	POP_BTN_VERSION,        /* Ctrl+V */
-	POP_BTN_JOYSTICK_MODE,       /* Ctrl+J */
-	POP_BTN_KEYBOARD_MODE,       /* Ctrl+K */
 	/* the cheats */
 	POP_BTN_CHEAT_FIRST,
 	POP_BTN_CHEAT_SHOW_ROOMS = POP_BTN_CHEAT_FIRST, /* C */

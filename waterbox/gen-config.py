@@ -96,6 +96,15 @@ WHAT = {
 }
 
 
+# each release as the System box names it
+RELEASE_LABELS = [
+    ("1.0", "1.0 (1990)"),
+    ("1.1", "1.1 (IBM PC)"),
+    ("1.3", "1.3 (1992)"),
+    ("1.4", "1.4 (Collection CD)"),
+]
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "waterbox.config")
     firmware = []
@@ -121,7 +130,15 @@ def main():
     cfg = {
         "coreName": "SDLPoP",
         "kind": "game",
-        "systemId": "PrinceOfPersia",
+        # the releases are the package's machines, so the new-project wizard offers
+        # them where it offers an emulator's systems (its System box, beside the
+        # core) rather than among the settings; the version setting stays what
+        # picks one, so a project that already names its release keeps it
+        "machineSetting": "version",
+        "machines": [
+            {"id": "PrinceOfPersia", "label": "Prince of Persia %s" % label, "when": [v]}
+            for v, label in RELEASE_LABELS
+        ],
         "author": "David Nagy and the SDLPoP contributors, from Jordan Mechner's Prince of Persia; chimera port by Sergio Martin",
         "url": "https://github.com/ToolAssisted-run/chimera-core-sdlpop",
         "deterministic": True,

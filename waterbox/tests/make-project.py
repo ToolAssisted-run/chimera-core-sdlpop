@@ -133,7 +133,7 @@ def main():
         "branches": [],
         "headers": {
             "MovieVersion": "Chimera Project File v1.1",
-            "Platform": cfg["systemId"],
+            "Platform": cfg["machines"][0]["id"],
             "SHA1": files[0]["sha1"] if files else "",
             "LastInputFrame": str(a.frames - 1),
             "VsyncNumerator": str(cfg["video"]["vsyncNumerator"]),

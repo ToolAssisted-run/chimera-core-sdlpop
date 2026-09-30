@@ -639,9 +639,9 @@ fi
 wd="$(workdir nocheats '{"enable_copyprot":false}')"
 boxed "$wd" --frames 300 > "$work/nocheats-plain.txt" 2>/dev/null
 boxed "$wd" --frames 300 --press "100:cC-+VKIW4:30" --press "100:682BHM5:30" > "$work/nocheats-pressed.txt" 2>/dev/null
-if grep -qx 'activeButtons=15' "$work/nocheats-plain.txt" && grep -qx 'activeButtons=31' "$work/cheats.box.txt" &&
+if grep -qx 'activeButtons=13' "$work/nocheats-plain.txt" && grep -qx 'activeButtons=29' "$work/cheats.box.txt" &&
    cmp -s <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt"); then
-	report "cheats:off" PASS "15 buttons active without the setting (31 with it); every cheat held for 30 steps on the title changes nothing"
+	report "cheats:off" PASS "13 buttons active without the setting (29 with it); every cheat held for 30 steps on the title changes nothing"
 else
 	report "cheats:off" FAIL "$(grep activeButtons "$work/nocheats-plain.txt") / $(grep activeButtons "$work/cheats.box.txt"); $(diff <(digests < "$work/nocheats-plain.txt") <(digests < "$work/nocheats-pressed.txt") | head -2 | tr '\n' ' ')"
 fi

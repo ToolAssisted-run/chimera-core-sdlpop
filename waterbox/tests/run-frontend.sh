@@ -194,7 +194,7 @@ else
 	report "gui:project" FAIL "status $(meta gui status) $(meta gui detail) (build/frontend/gui.log)"
 fi
 
-# with the cheats setting the project has the cheats' 16 columns as well (31),
+# with the cheats setting the project has the cheats' 16 columns as well (29),
 # and one of them pressed - More Time on row 50 - reaches the game: the route
 # ends with 61 minutes, as the reference pressing the same key does
 mkdir -p "$work/nativecheats"; cp "$work/native/"* "$work/nativecheats/"
@@ -205,7 +205,7 @@ python3 "$here/make-project.py" "$pkg" "$work/cheats.chimeraProject" "$frames" -
 	--settings "$csettings" --press "50:Cheat More Time"
 gui cheatsgui "$config" "$work/cheats.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
 ncols="$(python3 -c "import json; p = json.load(open('$work/cheats.chimeraProject')); print(p['input'].splitlines()[1].count('|'))")"
-if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "31" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
+if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "29" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
    ! cmp -s "$work/native.gs.bin" "$work/cheats.gs.bin"; then
 	report "gui:cheats-project" PASS "a project with the cheats on ($ncols columns): More Time on row 50 reaches the game, Game State is the reference's"
 else
@@ -242,20 +242,20 @@ else
 	report "gui:game-properties" FAIL "list $(meta gui game_list)/$nprops, Kid.X $(meta gui game_kid_x)/$(meta gui game_kid_x_byte), tile $(meta gui game_tile), set $(meta gui game_set)->$(meta gui game_kid_x_after_set) $(meta gui game_error)"
 fi
 
-# the core's own refusal reaches the frontend: a project that pins no data
-# (so Chimera itself asks nothing) given SDLPoP's own DIGISND1.DAT
-python3 - "$work/gui.chimeraProject" "$work/nopins.chimeraProject" <<'EOF'
+# the core's own refusal reaches the frontend: a Player Name with nothing the
+# game can show, which Chimera passes on as a string and only the core refuses
+# (the data files are no refusal since any file may take an original's place)
+python3 - "$work/gui.chimeraProject" "$work/noname.chimeraProject" <<'EOF'
 import json, sys
 p = json.load(open(sys.argv[1]))
-p["firmware"] = []
+p["settings"]["player_name"] = "   "
 json.dump(p, open(sys.argv[2], "w"), indent="\t")
 EOF
-bad=(); for f in "${firmware[@]}"; do case "$f" in DIGISND1.DAT=*) bad+=("DIGISND1.DAT=$root/extern/SDLPoP/data/DIGISND1.DAT") ;; *) bad+=("$f") ;; esac; done
-code="$(gui refuse "$config" "$work/nopins.chimeraProject" 10 "${bad[@]}")"
-if [ "$code" = "64" ] && grep -q "DIGISND1.DAT is the one SDLPoP ships, not Prince of Persia 1.0's" "$work/refuse.log"; then
+code="$(gui refuse "$config" "$work/noname.chimeraProject" 10 "${firmware[@]}")"
+if [ "$code" = "64" ] && grep -q "the Player Name (Hall of Fame) setting has nothing the game can show" "$work/refuse.log"; then
 	report "gui:refusal" PASS "the core's load error is what Chimera shows (headless: exit 64 with the text)"
 else
-	report "gui:refusal" FAIL "exit $code; $(grep -m1 -i 'DIGISND1\|error' "$work/refuse.log" | cut -c1-100)"
+	report "gui:refusal" FAIL "exit $code; $(grep -m1 -i 'player name\|error' "$work/refuse.log" | cut -c1-100)"
 fi
 
 # the bindings the package ships become the frontend's defaults

@@ -105,6 +105,47 @@ RELEASE_LABELS = [
 ]
 
 
+# ---- what the controls and the system are called ----
+# The frontend keeps no table of these: a core says what its own are called.
+# MNEMONICS is the letter each button writes into a movie's text and heads its
+# input column with, by the button's name - whole, or without its player ("P2
+# Up" is found under "Up"), so one line serves every pad. AXIS_HEADERS is the
+# short header of each axis's column. (An entry is read by position: a letter
+# may change and no movie made before it is harmed.)
+MNEMONICS = {
+    "Up": "U", "Down": "D", "Left": "L", "Right": "R", "Shift": "^", "Enter": "e", "Pause": "p",
+    "Show Time": "t", "Restart Level": "a", "Restart Game": "r", "Next Level": "n",
+    "Sound On/Off": "s", "Version": "v", "Cheat Show Rooms": "C", "Cheat Show Corner Rooms": "Q",
+    "Cheat Less Time": "-", "Cheat More Time": "+", "Cheat Revive": "V", "Cheat Kill Guard": "K",
+    "Cheat Flip Screen": "I", "Cheat Feather Fall": "W", "Cheat Look Left": "4",
+    "Cheat Look Right": "6", "Cheat Look Up": "8", "Cheat Look Down": "2", "Cheat Look Back": "5",
+    "Cheat Blind Mode": "B", "Cheat Add Hit Point": "H", "Cheat Add Max Hit Point": "M",
+}
+SYSTEM_NAMES = {
+    "PrinceOfPersia": "Prince of Persia",
+}
+
+
+def _bare(name):
+    """A control's name without its player: "P2 Up" -> "Up"."""
+    head, _, rest = name.partition(" ")
+    return rest if rest and head[:1] == "P" and head[1:].isdigit() else name
+
+
+def mnemonics_for(buttons):
+    """The "mnemonics" of an input declaration: a letter for every one of its
+    buttons, and for nothing else. A button nobody gave a letter stops the
+    build - the engine would give it its rule's guess, and two columns of one
+    pad would share a letter with nobody having decided it."""
+    out = {}
+    for b in buttons:
+        key = b if b in MNEMONICS else _bare(b)
+        if key not in MNEMONICS:
+            raise SystemExit("no mnemonic for the button %r (MNEMONICS in %s)" % (b, __file__))
+        out[key] = MNEMONICS[key]
+    return out
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "waterbox.config")
     firmware = []
@@ -130,6 +171,7 @@ def main():
     cfg = {
         "coreName": "SDLPoP",
         "kind": "game",
+        "systemNames": SYSTEM_NAMES,
         # the releases are the package's machines, so the new-project wizard offers
         # them where it offers an emulator's systems (its System box, beside the
         # core) rather than among the settings; the version setting stays what
@@ -167,6 +209,7 @@ def main():
             "name": "Prince of Persia",
             "_comment": "The DOS game's keyboard: the arrows, Shift (grab, pick up, strike) and Enter (restart after dying, as Shift does); the game's commands, each its own button (Pause is Esc, Show Time is Space, Restart Level is Ctrl+A, Restart Game Ctrl+R, Next Level Shift+L, Sound On/Off Ctrl+S, Version Ctrl+V); and the cheats the game has when started with its cheat word, active only with the cheats setting on (Show Rooms C, Show Corner Rooms Shift+C, Less Time and More Time keypad - and +, Revive R, Kill Guard K, Flip Screen Shift+I, Feather Fall Shift+W, Look Left/Right/Up/Down H/J/U/N, Look Back Ctrl+B, Blind Mode Shift+B, Add Hit Point Shift+S, Add Max Hit Point Shift+T). Left out: Ctrl+Q (it ends the program), the game's saved games (Ctrl+G and Ctrl+L), and Joystick Mode and Keyboard Mode (Ctrl+J, Ctrl+K), which mean nothing to a movie. The hall of fame's name is the player_name setting, entered by itself.",
             "buttons": buttons(),
+            "mnemonics": mnemonics_for(buttons()),
         },
         "settings": [
             {

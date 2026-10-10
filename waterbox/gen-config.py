@@ -71,28 +71,28 @@ BUTTON_NAMES = {
 
 
 WHAT = {
-    "PRINCE.DAT": "the pictures every level shares (the sword, the flames, the potions) and the palettes (1.3 and 1.4's also hold the level colours)",
+    "PRINCE.DAT": "the pictures that all levels share (the sword, the flames, the potions) and the palettes. In 1.3 and 1.4 it also holds the level colours",
     "KID.DAT": "the prince",
-    "LEVELS.DAT": "the fifteen levels: every room's tiles, the doors, the guards",
+    "LEVELS.DAT": "the fifteen levels, with the tiles of every room, the doors and the guards",
     "TITLE.DAT": "the title screens, the story pages and the hall of fame",
     "PV.DAT": "the princess and Jaffar in the cutscenes",
-    "VDUNGEON.DAT": "the dungeon levels' walls and floors",
-    "VPALACE.DAT": "the palace levels' walls and floors",
+    "VDUNGEON.DAT": "the walls and floors of the dungeon levels",
+    "VPALACE.DAT": "the walls and floors of the palace levels",
     "GUARD.DAT": "the guards",
-    "GUARD1.DAT": "the palace guards' colors",
-    "GUARD2.DAT": "the dungeon guards' colors",
+    "GUARD1.DAT": "the colours of the palace guards",
+    "GUARD2.DAT": "the colours of the dungeon guards",
     "FAT.DAT": "the fat guard",
     "SKEL.DAT": "the skeleton",
     "VIZIER.DAT": "Jaffar",
     "SHADOW.DAT": "the shadow",
-    "IBM_SND1.DAT": "the PC speaker sounds (opened whatever the sound card)",
-    "IBM_SND2.DAT": "the PC speaker music (opened whatever the sound card)",
-    "DIGISND1.DAT": "the Sound Blaster's digitized sound effects",
-    "DIGISND2.DAT": "the Sound Blaster's digitized cutscene and level sounds",
-    "DIGISND3.DAT": "the Sound Blaster's digitized sound effects",
+    "IBM_SND1.DAT": "the PC speaker sounds. The game opens this file whichever sound card is chosen",
+    "IBM_SND2.DAT": "the PC speaker music. The game opens this file whichever sound card is chosen",
+    "DIGISND1.DAT": "the digitized sound effects for the Sound Blaster",
+    "DIGISND2.DAT": "the digitized cutscene and level sounds for the Sound Blaster",
+    "DIGISND3.DAT": "the digitized sound effects for the Sound Blaster",
     "MIDISND1.DAT": "the AdLib music",
     "MIDISND2.DAT": "the AdLib music of the title and cutscenes",
-    "PRINCE.EXE": "the release's program, which is only checked (SDLPoP is the program): it is what tells 1.0 from 1.1 and 1.3 from 1.4, whose data files are the same",
+    "PRINCE.EXE": "the release's program. It is only checked and never run, because SDLPoP is the program. It is the file that tells 1.0 from 1.1 and 1.3 from 1.4, whose data files are the same",
 }
 
 
@@ -155,7 +155,7 @@ def main():
         decl = {
             "id": name,
             "display": "Prince of Persia %s %s" % (which, name),
-            "description": "%s of the original Prince of Persia %s (DOS): %s. Yours to supply - the package carries none of the game's data. A file of your own (a modified one) may take its place: the project pins its hash." % (name, which, WHAT[name]),
+            "description": "%s of the original Prince of Persia %s (DOS): %s. You have to supply it. The package contains none of the game's data. A modified file of your own can be used instead, and the project records exactly which file it was." % (name, which, WHAT[name]),
             "size": size,
             "sha1": sha1,
             "name": name,
@@ -164,7 +164,7 @@ def main():
             conds.append({"setting": "sound", "in": ["digital"]})
         if need == "NEED_ORIGINAL_LEVELS":
             conds.append({"not": {"slot": "levels"}})
-            decl["description"] += " Not needed when the project brings a level set of its own."
+            decl["description"] += " It is not needed when the project has a level set of its own."
         decl["requiredWhen"] = conds[0] if len(conds) == 1 else {"all": conds}
         firmware.append(decl)
 
@@ -218,21 +218,42 @@ def main():
                 "type": "enum",
                 "options": ["1.0", "1.1", "1.3", "1.4"],
                 "default": "1.0",
-                "description": "The release of Prince of Persia played, whose files the project brings. 1.0 (1990) and 1.1 (the IBM PC release) share their data files; 1.3 (1992) and 1.4 (the Prince of Persia Collection CD) share theirs, with 1.3's level colours (level 3's dungeon green, not blue) and two sounds and the music changed. The guards fight by 1.0's tables in 1.0 and by the later ones in 1.1, 1.3 and 1.4; the copy protection asks from each release's own manual (1.0, 1.1, and 1.3/1.4). Each release's PRINCE.EXE is checked too, as it is what tells the two of a pair apart.",
+                "description": "Which release of Prince of Persia is played. The "
+                    "project supplies that release's files. 1.0 (1990) and "
+                    "1.1 (the IBM PC release) have the same data files. 1.3 "
+                    "(1992) and 1.4 (the Prince of Persia Collection CD) "
+                    "also have the same data files as each other. Those "
+                    "differ from the earlier ones in the level colours (the "
+                    "dungeon of level 3 is green, not blue), two sounds and "
+                    "the music. The guards fight by the tables of 1.0 in "
+                    "1.0, and by the later tables in 1.1, 1.3 and 1.4. The "
+                    "copy protection asks from each release's own manual "
+                    "(one for 1.0, one for 1.1, and one for 1.3 and 1.4). "
+                    "Each release's PRINCE.EXE is checked too, because it is"
+                    " the file that tells the two releases of a pair apart.",
             },
             {
                 "name": "cheats",
                 "display": "Enable Cheats",
                 "type": "bool",
                 "default": False,
-                "description": "Start the game with its cheat word, as the DOS game was started from the command line (megahit; 1.3 and 1.4 used improved). The cheats' buttons exist only with this on. It also lets Next Level (Shift+L) skip any level without cutting the time to 15 minutes.",
+                "description": "Starts the game with its cheat word, as the DOS game "
+                    "was started from the command line (megahit, or improved"
+                    " for 1.3 and 1.4). The cheat buttons exist only when "
+                    "this is on. It also lets Next Level (Shift+L) skip any "
+                    "level without cutting the time to 15 minutes.",
             },
             {
                 "name": "player_name",
                 "display": "Player Name (Hall of Fame)",
                 "type": "string",
                 "default": "Chimera",
-                "description": "The name a won game enters in the hall of fame, when its time earns a place there - as the player would have typed it (the printable characters, as many as the box holds, up to 24). There are no letter keys: the game enters it by itself.",
+                "description": "The name that a won game enters in the hall of fame "
+                    "when its time earns a place there. It is entered as the"
+                    " player would have typed it. Only printable characters "
+                    "are used, and only as many as fit in the box (24 at "
+                    "most). The controls have no letter keys, so the game "
+                    "enters the name by itself.",
             },
             {
                 "name": "sound",
@@ -240,7 +261,13 @@ def main():
                 "type": "enum",
                 "options": ["digital", "pcSpeaker"],
                 "default": "digital",
-                "description": "digital: the Sound Blaster's digitized effects and the AdLib music, as SDLPoP plays them. pcSpeaker: the PC speaker's sounds. The game waits for some sounds to end (a level's closing music, the title), so the sound card is part of the machine; digital needs the DIGISND and MIDISND files.",
+                "description": "'digital' is the Sound Blaster's digitized sound "
+                    "effects and the AdLib music, as SDLPoP plays them. "
+                    "'pcSpeaker' is the PC speaker's sounds. The game waits "
+                    "for some sounds to end (the music at the end of a "
+                    "level, the title). So it is part of the machine, and a "
+                    "movie needs the same value. 'digital' needs the DIGISND"
+                    " and MIDISND files.",
             },
             {
                 "name": "random_seed",
@@ -249,7 +276,9 @@ def main():
                 "default": 0,
                 "min": 0,
                 "max": 2147483647,
-                "description": "The seed of the game's random number generator at power-on (the DOS game took it from the clock). A movie records the number it ran with.",
+                "description": "The starting value (seed) of the game's random number "
+                    "generator. The DOS game took it from the clock. A movie"
+                    " records the number it ran with.",
             },
         ] + ini_settings(),
         "firmware": firmware,

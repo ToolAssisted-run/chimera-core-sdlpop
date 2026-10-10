@@ -1,5 +1,5 @@
 {
-  "_comment": "A Prince of Persia project needs no file of its own: the game is the release's original data, which the project brings as firmware (the core's firmware list, by the version setting). A project may add a custom level set and an SDLPoP quicksave to start from.",
+  "_comment": "A Prince of Persia project needs no file of its own. The game is made of the chosen release's original data files, which the project supplies as firmware (see the core's firmware list, which follows the Version setting). A project can add a custom level set and an SDLPoP quicksave to start from.",
   "slots": [
     {
       "id": "levels",
@@ -9,7 +9,7 @@
       "formats": [
         "dat"
       ],
-      "help": "A LEVELS.DAT of a custom level set (from a level editor or a mod), played in place of the original levels; the rest of the game is still the release's original data. Leave it empty for the original game."
+      "help": "A LEVELS.DAT file with a custom level set (from a level editor or a mod). It is played in place of the original levels. The rest of the game still comes from the release's original data. Leave it empty for the original game."
     },
     {
       "id": "savestate",
@@ -19,7 +19,7 @@
       "formats": [
         "sav"
       ],
-      "help": "An SDLPoP quicksave (QUICKSAVE.SAV, saved with F6 in SDLPoP 1.16 or later): the run starts from it - the whole level as it was, the prince, the guard, the time and the random seed - on the first tick, instead of on the title."
+      "help": "An SDLPoP quicksave (QUICKSAVE.SAV, saved with F6 in SDLPoP 1.16 or later). The run starts from it on the first tick, and not at the title. It holds the whole level as it was, the prince, the guard, the time and the random seed."
     }
   ]
 }

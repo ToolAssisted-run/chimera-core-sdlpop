@@ -19,27 +19,27 @@
  * release), cheats, sound (the sound card) and random_seed.
  */
 POP_SETTING(enable_copyprot, BOOL, "General", 1, 0, 0, "Copy protection",
-	"The original game's copy protection: after level 1 comes the potions level, where the prince must drink the potion whose letter the manual gives. On in 1.0; SDLPoP turns it off by default.")
+	"The original game's copy protection. After level 1 comes the potions level, where the prince must drink the potion whose letter the manual gives. It is on in 1.0. SDLPoP turns it off by default.")
 POP_SETTING(first_level, INT, "CustomGameplay", 1, 1, 14, "First level",
-	"The level a new game starts on (1 in the original game).")
+	"The level a new game starts on. The original game starts on 1.")
 POP_SETTING(skip_title, BOOL, "CustomGameplay", 0, 0, 0, "Skip the title",
-	"Start the first level at once instead of playing the title sequence.")
+	"Starts the first level immediately and does not play the title sequence.")
 POP_SETTING(start_minutes_left, INT, "CustomGameplay", 60, -1, 32767, "Minutes",
-	"Minutes on the clock at the start (60 in the original game). -1 is no time limit.")
+	"The minutes on the clock at the start. The original game has 60. -1 means no time limit.")
 POP_SETTING(start_hitp, INT, "CustomGameplay", 3, 1, 10, "Hit points",
-	"Hit points at the start of the game (3 in the original game).")
+	"The hit points at the start of the game. The original game has 3.")
 POP_SETTING(max_hitp_allowed, INT, "CustomGameplay", 10, 1, 10, "Most hit points",
-	"The most hit points the prince can reach with life potions (10 in the original game).")
+	"The most hit points the prince can reach with life potions. The original game has 10.")
 POP_SETTING(use_fixes_and_enhancements, BOOL, "Enhancements", 0, 0, 0, "Fixes and enhancements",
-	"SDLPoP's fixes for the original game's bugs and its gameplay enhancements. Off is the original game; on applies the ones below that are turned on (all are off by default).")
+	"SDLPoP's fixes for the original game's bugs, and its gameplay enhancements. Off is the original game. On applies those of the settings below that are turned on (all of them are off by default).")
 POP_SETTING(enable_crouch_after_climbing, BOOL, "Enhancements", 0, 0, 0, "Crouch after climbing",
-	"Pressing down and forward together right after climbing up crouches (the original always climbs back down).")
+	"Pressing down and forward together right after climbing up makes the prince crouch. In the original he always climbs back down.")
 POP_SETTING(enable_freeze_time_during_end_music, BOOL, "Enhancements", 0, 0, 0, "Freeze time during the end music",
-	"The clock stops while a level's ending music plays (in the original it keeps running).")
+	"The clock stops while a level's ending music plays. In the original it keeps running.")
 POP_SETTING(enable_remember_guard_hp, BOOL, "Enhancements", 0, 0, 0, "Remember guard hit points",
 	"A guard keeps the hit points he had when the prince comes back into his room.")
 POP_SETTING(enable_super_high_jump, BOOL, "Enhancements", 0, 0, 0, "Super high jump",
-	"In feather fall (after the green potion) the prince can jump two stories up.")
+	"During feather fall (after the green potion) the prince can jump two floors up.")
 POP_SETTING(enable_jump_grab, BOOL, "Enhancements", 0, 0, 0, "Jump grab",
 	"The prince can grab the floor above while jumping (Shift and Up without forward).")
 POP_SETTING(fix_gate_sounds, BOOL, "Enhancements", 0, 0, 0, "Fix: gate sounds",
@@ -47,13 +47,13 @@ POP_SETTING(fix_gate_sounds, BOOL, "Enhancements", 0, 0, 0, "Fix: gate sounds",
 POP_SETTING(fix_two_coll_bug, BOOL, "Enhancements", 0, 0, 0, "Fix: two collision bug",
 	"An open gate or chomper no longer lets the prince go through walls (tricks 7, 37, 62).")
 POP_SETTING(fix_infinite_down_bug, BOOL, "Enhancements", 0, 0, 0, "Fix: infinite fall",
-	"A room linked to itself at the bottom, with no floor in the prince's column, no longer hangs the game.")
+	"A room linked to itself at the bottom, with no floor in the prince's column, no longer makes the game stop responding.")
 POP_SETTING(fix_gate_drawing_bug, BOOL, "Enhancements", 0, 0, 0, "Fix: gate under a gate",
 	"The top of a gate under another gate is drawn.")
 POP_SETTING(fix_bigpillar_climb, BOOL, "Enhancements", 0, 0, 0, "Fix: big pillar climb",
-	"Climbing up to a floor with a big pillar top behind, turned right, no longer sees through the floor.")
+	"When the prince climbs up to a floor that has a big pillar top behind it, facing right, the floor is no longer drawn see-through.")
 POP_SETTING(fix_jump_distance_at_edge, BOOL, "Enhancements", 0, 0, 0, "Fix: jump distance at an edge",
-	"Climbing up two floors, turning and jumping up no longer makes the prince fall (trick 25 no longer needed).")
+	"Climbing up two floors, turning and jumping up no longer makes the prince fall (trick 25 is no longer needed).")
 POP_SETTING(fix_edge_distance_check_when_climbing, BOOL, "Enhancements", 0, 0, 0, "Fix: edge check when climbing",
 	"Climbing to a higher floor no longer checks the edge below, which could teleport the prince.")
 POP_SETTING(fix_painless_fall_on_guard, BOOL, "Enhancements", 0, 0, 0, "Fix: painless fall on a guard",
@@ -65,13 +65,13 @@ POP_SETTING(fix_stand_on_thin_air, BOOL, "Enhancements", 0, 0, 0, "Fix: standing
 POP_SETTING(fix_press_through_closed_gates, BOOL, "Enhancements", 0, 0, 0, "Fix: buttons through closed gates",
 	"Buttons right of a closed gate can no longer be pressed through it (trick 1).")
 POP_SETTING(fix_grab_falling_speed, BOOL, "Enhancements", 0, 0, 0, "Fix: grab two stories down",
-	"Jumping and bumping into a wall no longer grabs a ledge two stories down.")
+	"After jumping and bumping into a wall, the prince no longer grabs a ledge two floors down.")
 POP_SETTING(fix_skeleton_chomper_blood, BOOL, "Enhancements", 0, 0, 0, "Fix: skeleton blood",
 	"A chomper that chomps a skeleton does not become bloody.")
 POP_SETTING(fix_move_after_drink, BOOL, "Enhancements", 0, 0, 0, "Fix: move after drinking",
 	"The controls are released properly after drinking a potion.")
 POP_SETTING(fix_loose_left_of_potion, BOOL, "Enhancements", 0, 0, 0, "Fix: loose floor left of a potion",
-	"Drawing of a loose floor to the left of a potion or sword.")
+	"Fixes how a loose floor to the left of a potion or sword is drawn.")
 POP_SETTING(fix_guard_following_through_closed_gates, BOOL, "Enhancements", 0, 0, 0, "Fix: guards through closed gates",
 	"Guards no longer follow the prince to the next room through a closed gate.")
 POP_SETTING(fix_safe_landing_on_spikes, BOOL, "Enhancements", 0, 0, 0, "Fix: safe landing on spikes",
@@ -83,7 +83,7 @@ POP_SETTING(fix_drop_through_tapestry, BOOL, "Enhancements", 0, 0, 0, "Fix: drop
 POP_SETTING(fix_land_against_gate_or_tapestry, BOOL, "Enhancements", 0, 0, 0, "Fix: land against a gate",
 	"Landing against a closed gate or a tapestry plays the whole landing animation.")
 POP_SETTING(fix_unintended_sword_strike, BOOL, "Enhancements", 0, 0, 0, "Fix: unintended sword strike",
-	"Drawing the sword no longer sometimes strikes at once.")
+	"Drawing the sword no longer sometimes strikes immediately.")
 POP_SETTING(fix_retreat_without_leaving_room, BOOL, "Enhancements", 0, 0, 0, "Fix: retreat out of a room",
 	"Retreating in a sword fight can no longer leave a room without the room changing (trick 35).")
 POP_SETTING(fix_running_jump_through_tapestry, BOOL, "Enhancements", 0, 0, 0, "Fix: running jump through a tapestry",
@@ -99,11 +99,11 @@ POP_SETTING(fix_feather_interrupted_by_leveldoor, BOOL, "Enhancements", 0, 0, 0,
 POP_SETTING(fix_offscreen_guards_disappearing, BOOL, "Enhancements", 0, 0, 0, "Fix: offscreen guards disappearing",
 	"Guards pushed offscreen reappear in the next room.")
 POP_SETTING(fix_move_after_sheathe, BOOL, "Enhancements", 0, 0, 0, "Fix: move after sheathing",
-	"Releasing down while putting the sword away no longer ducks.")
+	"Releasing down while putting the sword away no longer makes the prince duck.")
 POP_SETTING(fix_hidden_floors_during_flashing, BOOL, "Enhancements", 0, 0, 0, "Fix: hidden floors while flashing",
-	"After uniting with the shadow on level 12 the hidden floors appear at once.")
+	"After the prince unites with the shadow on level 12, the hidden floors appear immediately.")
 POP_SETTING(fix_hang_on_teleport, BOOL, "Enhancements", 0, 0, 0, "Fix: hang-on teleport",
-	"Grabbing a ledge at a bottom corner of a room no longer teleports to the room above.")
+	"Grabbing a ledge at a bottom corner of a room no longer teleports the prince to the room above.")
 POP_SETTING(fix_exit_door, BOOL, "Enhancements", 0, 0, 0, "Fix: closed exit doors",
 	"Closed exit doors can no longer be entered after meeting the shadow, after Jaffar dies, or after opening another exit.")
 POP_SETTING(fix_quicksave_during_feather, BOOL, "Enhancements", 0, 0, 0, "Fix: feather fall timing",
@@ -119,7 +119,7 @@ POP_SETTING(fix_falling_through_floor_during_sword_strike, BOOL, "Enhancements",
 POP_SETTING(fix_register_quick_input, BOOL, "Enhancements", 0, 0, 0, "Fix: quick key presses",
 	"A key pressed and released between two ticks still counts.")
 POP_SETTING(fix_turn_running_near_wall, BOOL, "Enhancements", 0, 0, 0, "Fix: turning to run near a wall",
-	"Turning to run right next to a wall, gate or tapestry safe-steps as facing it would (tricks 1 and 2).")
+	"Turning to run right next to a wall, gate or tapestry makes the prince take a careful step, as he would when facing it (tricks 1 and 2).")
 POP_SETTING(fix_feather_fall_affects_guards, BOOL, "Enhancements", 0, 0, 0, "Fix: feather fall and guards",
 	"Feather fall affects only the prince, not the guards.")
 POP_SETTING(fix_one_hp_stops_blinking, BOOL, "Enhancements", 0, 0, 0, "Fix: last hit point blinking",

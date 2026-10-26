@@ -101,13 +101,15 @@ else
 	fwargs=(); for f in "${firmware[@]}"; do fwargs+=(--firmware "$f"); done
 	python3 "$here/make-project.py" "$pkg" "$work/route.chimeraProject" "$frames" --movie "$route" \
 		--settings "$settings" --log-out "$work/route.log"
-	: > "$work/empty.rom"
-	( cd "$work" && "$crun" "$pkg" empty.rom route.log --settings "$settings" "${fwargs[@]}" \
+	# a game runs only in a project (Chimera, 2026-10-26): the route made into
+	# one by chimera-run, with no game file, the game's files its firmware
+	( cd "$work" && "$crun" --new-project "$work/run.chimeraProject" "$pkg" --movie route.log --settings "$settings" "${fwargs[@]}" \
+		> "$work/run.make.log" 2>&1 && "$crun" --project "$work/run.chimeraProject" "$pkg" "${fwargs[@]}" \
 		--dump "Game State=$work/run.gs.bin" --dump "Level=$work/run.level.bin" \
 		--screenshot "$((frames - 1))=$work/run.last.tga" --meta "$work/run.meta" > "$work/run.log" 2>&1 )
 	if grep -q '^status=OK' "$work/run.meta" 2>/dev/null && same "$work/run.gs.bin" "$work/run.level.bin" &&
 	   python3 "$here/compare-pictures.py" "$work/native.last.tga" "$work/run.last.tga" > "$work/run.pic" 2>&1; then
-		report "engine:route" PASS "$frames frames from a movie file: Game State, Level and the last picture are the reference's"
+		report "engine:route" PASS "$frames frames from a movie made into a project: Game State, Level and the last picture are the reference's"
 	else
 		report "engine:route" FAIL "$(grep -m1 detail= "$work/run.meta" 2>/dev/null) $(cat "$work/run.pic" 2>/dev/null) (build/frontend/run.log)"
 	fi

@@ -85,8 +85,8 @@ patch 0003 enters the hall of fame's name from a setting.
 Chimera includes no cores and downloads none. Download the `.chimeraCore`
 package from this repository's
 [Releases](https://github.com/ToolAssisted-run/chimera-core-sdlpop/releases)
-page, or build it, and put it in the `Cores` folder beside `Chimera.exe`;
-File > Core Manager lists it. The same file works on Linux and on Windows.
+page, or build it, and put it in the `cores` folder beside Chimera's program;
+Tools > Core Manager... lists it. The same file works on Linux and on Windows.
 The game's files are yours to supply, as the project's firmware.
 
 ## Building

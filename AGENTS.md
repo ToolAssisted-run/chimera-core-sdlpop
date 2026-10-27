@@ -37,7 +37,7 @@ On Ubuntu, as CI does:
 
 ```
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends meson ninja-build build-essential cmake pkg-config python3 mono-complete xvfb libgl1-mesa-dev libegl-dev libx11-dev libxext-dev libasound2-dev
+sudo apt-get install -y --no-install-recommends meson ninja-build build-essential cmake pkg-config python3 libgl1-mesa-dev libegl-dev libx11-dev libxext-dev libasound2-dev
 ```
 
 The sources: this repository with its submodules, and a Chimera checkout with
@@ -81,13 +81,13 @@ make -C waterbox -f guest.mk -j"$(nproc)"     # build/guest/core.wbx
 ## Install the core into Chimera
 
 Chimera includes no cores and downloads nothing. A core is a file in its
-`Cores` folder.
+`cores` folder.
 
 - Source checkout: `<chimera>/build/Cores/`. `build-package.sh -r <chimera>`
   writes there.
-- Release bundle: the `Cores` folder beside `Chimera.exe`, or the folder
-  chosen in File > Core Manager > Change folder...
-- File > Core Manager lists the folder; Refresh List rescans it.
+- Release bundle: the `cores` folder beside Chimera's program, or the folder
+  chosen in Tools > Core Manager... > Change folder...
+- Tools > Core Manager... lists the folder; Refresh List rescans it.
 
 ## Test before you commit
 
@@ -105,8 +105,10 @@ Chimera includes no cores and downloads nothing. A core is a file in its
   the files.
 - `run-gate.sh -q` skips the build; the `build:fresh` leg fails if a source
   is newer than `core.wbx`.
-- The frontend gate needs a built Chimera (`build/Chimera.exe`,
-  `build/dll/chimera-run`), `mono` and `Xvfb`. It skips what it cannot run.
+- The frontend gate needs Chimera built with its window
+  (`build/meson-linux/source/ui/chimera`, `build/dll/chimera-run`;
+  `tools/ci-chimera.sh` builds them). The window runs headless and needs no
+  display. The gate skips what it cannot run.
 - Results and pictures: `build/gate/`, `build/frontend/`.
 
 CI also runs Chimera's contract tests against the package

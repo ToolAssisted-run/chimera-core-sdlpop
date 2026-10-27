@@ -433,15 +433,15 @@ with its own break:
   from the project) - the Game State and Level domains and the last picture
   are the native reference's; a project whose "levels" slot holds a level set
   with one tile changed plays it without LEVELS.DAT.
-- **Chimera itself**, headless under Mono on a private Xvfb, with a config,
-  data home and Base path of its own (the gate checks nothing was written
+- **Chimera itself**, its window run headless (no display), with settings,
+  and Base path of its own (the gate checks nothing was written
   under the checkout): the project opened and played through Lua, its
   domains the reference's; the property library - `game.list()` has the
   core's 183, `game.get("Kid.X")` is the block's byte, the bit-field element
   `Room 1.Tile[10]` reads, `game.set` takes, an unknown name is nil; the
   core's own refusal (SDLPoP's later-release DIGISND1.DAT, in a project that
   pins nothing so Chimera asks nothing first) is what Chimera shows; the
-  package's keybinds become the defaults.
+  package's keybinds are the machine's when nobody changed them.
 
 | Break | Leg that failed |
 | --- | --- |

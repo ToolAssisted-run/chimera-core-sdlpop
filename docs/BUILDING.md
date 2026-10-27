@@ -23,17 +23,15 @@ Placeholders used in this document:
 
   ```
   sudo apt-get update
-  sudo apt-get install -y --no-install-recommends meson ninja-build build-essential cmake pkg-config python3 mono-complete xvfb libgl1-mesa-dev libegl-dev libx11-dev libxext-dev libasound2-dev
+  sudo apt-get install -y --no-install-recommends meson ninja-build build-essential cmake pkg-config python3 libgl1-mesa-dev libegl-dev libx11-dev libxext-dev libasound2-dev
   ```
 
 - The compiler is the distribution's gcc (`build-essential`). The workflow
   pins no compiler version.
-- The .NET SDK 8.0. CI sets it up with `actions/setup-dotnet@v4`,
-  `dotnet-version: '8.0'`. It builds Chimera and runs Chimera's contract
-  tests; the core's own build does not use it. Chimera's README installs
-  Microsoft's SDK with
-  `curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 8.0`
-  and says a distribution-built SDK lacks targets the frontend needs.
+- Chimera built with its window, for Chimera's contract tests (and the
+  frontend tests). Chimera's `tools/ci-chimera.sh` installs what that needs
+  (Qt 6.12, from Qt's own archives with aqt) and builds it; the workflow
+  keeps Qt in `~/qt` between runs. The core's own build does not use it.
 
 Nothing in this repository's scripts downloads anything. SDL 2 and SDLPoP are
 compiled from the two submodules. miniBox builds the guest C library (musl)
@@ -180,15 +178,15 @@ nothing built yet; its build log is `build/package-make.log`.
 ## Install it into Chimera
 
 Chimera includes no cores and downloads nothing: it has no network code. A
-core gets into Chimera as a file somebody puts in its `Cores` folder.
+core gets into Chimera as a file somebody puts in its `cores` folder.
 
 - In a Chimera source checkout the folder is `<chimera>/build/Cores/`.
   `./waterbox/build-package.sh -r <chimera>` writes the package straight
   there.
-- In a release bundle the folder is `Cores`, beside `Chimera.exe`. Copy
+- In a release bundle the folder is `cores`, beside Chimera's program. Copy
   `sdlpop.chimeraCore` into it. Another folder can be chosen in
-  File > Core Manager > Change folder...
-- File > Core Manager lists what is in the folder. Refresh List rescans it
+  Tools > Core Manager... > Change folder...
+- Tools > Core Manager... lists what is in the folder. Refresh List rescans it
   for a package copied in while the window is open.
 
 The same package file works on Linux and on Windows. Chimera's sandbox,
@@ -253,9 +251,9 @@ release's files (its DAT files and PRINCE.EXE) in `tests/roms-local/pop10`,
 Usage: `./waterbox/tests/run-frontend.sh [--chimera-root <path>] [-m <miniBox dir>] [-d <PoP 1.0 dir>]`
 
 It proves the package as Chimera loads it: `chimera-run` (the engine with no
-frontend) and Chimera itself, headless under Mono, play a project and end
+frontend) and Chimera's window, run headless, play a project and end
 with the native reference's memory and picture; the core's refusal reaches
-the frontend; the package's key bindings become the defaults. CI does not run
+the frontend; the package's key bindings are the machine's when nobody changed them. CI does not run
 it.
 
 It needs:
@@ -265,10 +263,9 @@ It needs:
 - `build/native/run-native`, from `native.mk`. Without it the script stops.
 - A built Chimera checkout: `--chimera-root`, else `../chimera` beside this
   repository, else `~/chimera`. Without `<chimera>/build/dll/chimera-run` the
-  `engine` legs are skipped; without `<chimera>/build/Chimera.exe` the
-  `frontend` legs are.
-- `mono`, and `Xvfb` when `DISPLAY` is not set: the script then starts a
-  private one. Without Xvfb the `frontend` legs are skipped.
+  `engine` legs are skipped; without
+  `<chimera>/build/meson-linux/source/ui/chimera` the `frontend` legs are.
+- `python3`. No display is needed: the window runs headless.
 
 It builds the package itself and writes only into `build/frontend/`, never
 into the Chimera checkout.
@@ -279,11 +276,7 @@ CI runs Chimera's own tests against the package it just built. They need
 Chimera built first, with the workflow's commands:
 
 ```
-cd <chimera>
-meson setup build/meson-linux --prefix "$PWD/build" --libdir dll
-meson compile -C build/meson-linux
-meson install -C build/meson-linux
-dotnet build source/gui/Chimera.sln -c Release /nodeReuse:false -p:UseSharedCompilation=false
+<chimera>/tools/ci-chimera.sh
 ```
 
 CI runs these before it builds miniBox. The core's own build reads only
@@ -292,10 +285,7 @@ miniBox's build directory, so the order between the two does not matter.
 Then, with the package in `<chimera>/build/Cores`:
 
 ```
-cd <chimera>
-CHIMERA_CORES_DIR="$PWD/build/Cores" dotnet test source/gui/Chimera.Tests.Client.Common/Chimera.Tests.Client.Common.csproj \
-  -c Release --nologo \
-  --filter "FullyQualifiedName~InstalledCorePackagesTests|FullyQualifiedName~MnemonicUniquenessTests"
+CHIMERA_CORES_DIR=<chimera>/build/Cores <chimera>/build/meson-linux/source/ui/test-packages
 ```
 
 They prove the package is readable, is built for an ABI this frontend runs,

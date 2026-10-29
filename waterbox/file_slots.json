@@ -3,23 +3,23 @@
   "slots": [
     {
       "id": "levels",
-      "title": "Custom levels",
+      "title": "slot.levels",
       "min": 0,
       "max": 1,
       "formats": [
         "dat"
       ],
-      "help": "A LEVELS.DAT file with a custom level set (from a level editor or a mod). It is played in place of the original levels. The rest of the game still comes from the release's original data. Leave it empty for the original game."
+      "help": "slot.levels.help"
     },
     {
       "id": "savestate",
-      "title": "Savestate",
+      "title": "slot.savestate",
       "min": 0,
       "max": 1,
       "formats": [
         "sav"
       ],
-      "help": "An SDLPoP quicksave (QUICKSAVE.SAV, saved with F6 in SDLPoP 1.16 or later). The run starts from it on the first tick, and not at the title. It holds the whole level as it was, the prince, the guard, the time and the random seed."
+      "help": "slot.savestate.help"
     }
   ]
 }

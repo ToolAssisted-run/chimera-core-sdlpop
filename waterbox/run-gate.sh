@@ -128,7 +128,7 @@ PYEOF
 # ------------------------------------------------------------------ 3. no data
 wd="$work/nodata"; mkdir -p "$wd"; printf '{}' > "$wd/settings"
 boxed "$wd" --frames 1 > "$work/nodata.txt" 2>/dev/null
-if grep -q '^loadError=Prince of Persia 1.0 needs PRINCE.DAT, KID.DAT, .*MIDISND2.DAT, PRINCE.EXE - add them as the project.s firmware' "$work/nodata.txt"; then
+if grep -q '^loadError=error.needs_files[^a-z][0-9]*[^0-9]1.0[^0-9]PRINCE.DAT, KID.DAT, .*MIDISND2.DAT, PRINCE.EXE$' "$work/nodata.txt"; then
 	report "refuse:no-data" PASS "every file named: $(sed -n 's/^loadError=//p' "$work/nodata.txt" | cut -c1-60)..."
 else
 	report "refuse:no-data" FAIL "$(head -1 "$work/nodata.txt")"
@@ -144,7 +144,7 @@ fi
 wd="$(workdir refuse-missing '{}')"; rm "$wd/KID.DAT"
 boxed "$wd" --frames 1 > "$work/r1.txt" 2>/dev/null
 native "$wd" --frames 1 > "$work/r1n.txt" 2>/dev/null
-if grep -qx 'loadError=Prince of Persia 1.0 needs KID.DAT - add it as the project.s firmware.' "$work/r1.txt" && cmp -s <(grep loadError "$work/r1.txt") <(grep loadError "$work/r1n.txt"); then
+if grep -qx 'loadError=error.needs_files.1.1.0.KID.DAT' "$work/r1.txt" && cmp -s <(grep loadError "$work/r1.txt") <(grep loadError "$work/r1n.txt"); then
 	report "refuse:missing-file" PASS "$(sed -n 's/^loadError=//p' "$work/r1.txt")"
 else
 	report "refuse:missing-file" FAIL "$(grep -m1 . "$work/r1.txt")"
@@ -178,7 +178,7 @@ else
 fi
 wd="$(workdir refuse-version '{"version":"1.2"}')"
 boxed "$wd" --frames 1 > "$work/r7.txt" 2>/dev/null
-if grep -qx "loadError=unknown version setting '1.2' (1.0, 1.1, 1.3 or 1.4)" "$work/r7.txt"; then
+if grep -qx "loadError=error.bad_version.1.2" "$work/r7.txt"; then
 	report "refuse:unknown-version" PASS "a version that is none of the four is named"
 else
 	report "refuse:unknown-version" FAIL "$(grep -m1 . "$work/r7.txt")"
@@ -206,7 +206,7 @@ else
 fi
 rm "$wd/MYLEVELS.DAT"
 boxed "$wd" --frames 1 > "$work/levelset2.txt" 2>/dev/null
-if grep -qx "loadError=the project's level set MYLEVELS.DAT is not there" "$work/levelset2.txt"; then
+if grep -qx "loadError=error.levels_missing.MYLEVELS.DAT" "$work/levelset2.txt"; then
 	report "slot:levels-missing" PASS "a level set the slot names but the project did not mount is refused by name"
 else
 	report "slot:levels-missing" FAIL "$(grep -m1 . "$work/levelset2.txt")"
@@ -660,8 +660,8 @@ printf 'V1.15   \0garbage' > "$wd/OLD.SAV"; printf '{"savestate":["OLD.SAV"]}' >
 boxed "$wd" --frames 1 > "$work/bs1.txt" 2>/dev/null
 head -c 100 "$work/QUICKSAVE.SAV" > "$wd/OLD.SAV"
 boxed "$wd" --frames 1 > "$work/bs2.txt" 2>/dev/null
-if grep -q "^loadError=the project's savestate OLD.SAV is not an SDLPoP quicksave" "$work/bs1.txt" &&
-   grep -q "^loadError=the project's savestate OLD.SAV is 100 bytes; a quicksave of this SDLPoP" "$work/bs2.txt"; then
+if grep -q "^loadError=error.not_quicksave.OLD.SAV" "$work/bs1.txt" &&
+   grep -q "^loadError=error.quicksave_size.OLD.SAV.100[^0-9]" "$work/bs2.txt"; then
 	report "slot:savestate-refused" PASS "another header, and a quicksave of another size (another SDLPoP build), are refused by name"
 else
 	report "slot:savestate-refused" FAIL "$(grep -m1 . "$work/bs1.txt") / $(grep -m1 . "$work/bs2.txt")"
@@ -677,7 +677,7 @@ png hofname
 wd="$(workdir hofempty '{"player_name":" "}')"
 boxed "$wd" --frames 1 > "$work/hofempty.txt" 2>/dev/null
 if [ "$(head -c 25 "$work/hof.bin" 2>/dev/null | tr -d '\0')" = "Sergio" ] && [ "$(at "$work/hofname.trace" 3299 2)" = "60" ] &&
-   grep -q "^loadError=the Player Name (Hall of Fame) setting has nothing the game can show" "$work/hofempty.txt"; then
+   grep -q "^loadError=error.no_player_name" "$work/hofempty.txt"; then
 	report "settings:player-name" PASS "a won game (60 minutes left) enters Sergio in the hall of fame by itself (build/gate/hofname.png); a blank name is refused"
 else
 	report "settings:player-name" FAIL "name [$(head -c 25 "$work/hof.bin" 2>/dev/null | tr -d '\0')], minutes $(at "$work/hofname.trace" 3299 2); $(grep -m1 . "$work/hofempty.txt")"

@@ -51,6 +51,8 @@ cp "$here/default_keybinds.json" "$staging/default_keybinds.json"
 # The core-declared file form for the project wizard - the frontend renders it,
 # this file decides it.
 cp "$here/file_slots.json" "$staging/file_slots.json"
+# the texts a person reads, a table per language (chimera docs/translations.md)
+cp -r "$here/languages" "$staging/languages"
 # the terms travel with the binary: SDLPoP (GPL-3.0) and SDL (zlib) are
 # somebody else's work (see waterbox/package-licenses.json)
 python3 "$mb/source/guest/package-licenses.py" "$root" "$staging"

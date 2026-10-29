@@ -13,20 +13,43 @@ import os
 import re
 import sys
 
+# ---- the texts a person reads ----------------------------------------------
+# Every one is a key of languages/en.json (chimera docs/translations.md):
+# text() records the key's English and returns the key, each of its
+# arguments after it behind a 0x1F; write_texts() puts them in the table,
+# beside the keys the core's code names.
+TEXTS = {}
+
+
+def text(key, english, *args):
+    if TEXTS.setdefault(key, english) != english:
+        sys.exit("%s has two texts: %r and %r" % (key, TEXTS[key], english))
+    return "\x1f".join([key] + [str(a) for a in args])
+
+
+def write_texts(path):
+    table = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {"texts": {}}
+    table["texts"].update(TEXTS)
+    table["texts"] = dict(sorted(table["texts"].items()))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(table, f, indent="\t", ensure_ascii=False)
+        f.write("\n")
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def ini_settings():
-    text = open(os.path.join(HERE, "settings.inc")).read()
+    source = open(os.path.join(HERE, "settings.inc")).read()
     out = []
-    for m in re.finditer(r'POP_SETTING\((\w+), (BOOL|INT), "(\w+)", (-?\d+), (-?\d+), (-?\d+), "([^"]*)",\s*"([^"]*)"\)', text):
+    for m in re.finditer(r'POP_SETTING\((\w+), (BOOL|INT), "(\w+)", (-?\d+), (-?\d+), (-?\d+), "([^"]*)",\s*"([^"]*)"\)', source):
         name, kind, _section, dflt, lo, hi, display, desc = m.groups()
-        s = {"name": name, "display": display}
+        s = {"name": name, "display": text("setting." + name.lower(), display)}
         if kind == "BOOL":
             s.update({"type": "bool", "default": dflt == "1"})
         else:
             s.update({"type": "int", "default": int(dflt), "min": int(lo), "max": int(hi)})
-        s["description"] = desc
+        s["description"] = text("setting." + name.lower() + ".about", desc)
         out.append(s)
     return out
 
@@ -35,10 +58,10 @@ RELEASES = [("V10", "1.0"), ("V11", "1.1"), ("V13", "1.3"), ("V14", "1.4")]
 
 
 def data_files():
-    text = open(os.path.join(HERE, "sdlpop-driver.c")).read()
+    source = open(os.path.join(HERE, "sdlpop-driver.c")).read()
     out = []
     for n, mask, size, sha1, need in re.findall(
-            r'\{ "([A-Z0-9_]+\.(?:DAT|EXE))", ((?:V1[0-4]\|?)+), (\d+), "([0-9A-F]{40})", (NEED_\w+) \}', text):
+            r'\{ "([A-Z0-9_]+\.(?:DAT|EXE))", ((?:V1[0-4]\|?)+), (\d+), "([0-9A-F]{40})", (NEED_\w+) \}', source):
         vs = [name for sym, name in RELEASES if sym in mask.split("|")]
         out.append((n, vs, int(size), sha1, need))
     return out
@@ -46,8 +69,8 @@ def data_files():
 
 def buttons():
     """The input.buttons names, in the driver's enum order (sdlpop-driver.h)."""
-    text = open(os.path.join(HERE, "sdlpop-driver.h")).read()
-    enum = text[text.index("enum PopButton"):text.index("POP_BTN_COUNT")]
+    source = open(os.path.join(HERE, "sdlpop-driver.h")).read()
+    enum = source[source.index("enum PopButton"):source.index("POP_BTN_COUNT")]
     syms = [s for s in re.findall(r"^\s*(POP_BTN_\w+)(?:\s*=[^,]*)?,", enum, re.M) if s != "POP_BTN_CHEAT_FIRST"]
     return [BUTTON_NAMES[s] for s in syms]
 
@@ -154,8 +177,11 @@ def main():
         conds = [{"setting": "version", "in": vs}]
         decl = {
             "id": name,
-            "display": "Prince of Persia %s %s" % (which, name),
-            "description": "%s of the original Prince of Persia %s (DOS): %s. You have to supply it. The package contains none of the game's data. A modified file of your own can be used instead, and the project records exactly which file it was." % (name, which, WHAT[name]),
+            "display": text("firmware.data_file", "Prince of Persia %1 %2", which, name),
+            "description": text("firmware.data_file.about", "%1 of the original Prince of Persia %2 (DOS): %3. You have to supply it. "
+                                "The package contains none of the game's data. A modified file of your own can be used instead, "
+                                "and the project records exactly which file it was.", name, which,
+                                text("firmware.what." + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_"), WHAT[name])),
             "size": size,
             "sha1": sha1,
             "name": name,
@@ -164,7 +190,8 @@ def main():
             conds.append({"setting": "sound", "in": ["digital"]})
         if need == "NEED_ORIGINAL_LEVELS":
             conds.append({"not": {"slot": "levels"}})
-            decl["description"] += " It is not needed when the project has a level set of its own."
+            decl["description"] += "\x1d" + text("firmware.not_needed_with_levels",
+                                                  "It is not needed when the project has a level set of its own.")
         decl["requiredWhen"] = conds[0] if len(conds) == 1 else {"all": conds}
         firmware.append(decl)
 
@@ -214,11 +241,11 @@ def main():
         "settings": [
             {
                 "name": "version",
-                "display": "Version",
+                "display": text("setting.version", "Version"),
                 "type": "enum",
                 "options": ["1.0", "1.1", "1.3", "1.4"],
                 "default": "1.0",
-                "description": "Which release of Prince of Persia is played. The "
+                "description": text("setting.version.about", "Which release of Prince of Persia is played. The "
                     "project supplies that release's files. 1.0 (1990) and "
                     "1.1 (the IBM PC release) have the same data files. 1.3 "
                     "(1992) and 1.4 (the Prince of Persia Collection CD) "
@@ -230,55 +257,55 @@ def main():
                     "copy protection asks from each release's own manual "
                     "(one for 1.0, one for 1.1, and one for 1.3 and 1.4). "
                     "Each release's PRINCE.EXE is checked too, because it is"
-                    " the file that tells the two releases of a pair apart.",
+                    " the file that tells the two releases of a pair apart."),
             },
             {
                 "name": "cheats",
-                "display": "Enable Cheats",
+                "display": text("setting.cheats", "Enable Cheats"),
                 "type": "bool",
                 "default": False,
-                "description": "Starts the game with its cheat word, as the DOS game "
+                "description": text("setting.cheats.about", "Starts the game with its cheat word, as the DOS game "
                     "was started from the command line (megahit, or improved"
                     " for 1.3 and 1.4). The cheat buttons exist only when "
                     "this is on. It also lets Next Level (Shift+L) skip any "
-                    "level without cutting the time to 15 minutes.",
+                    "level without cutting the time to 15 minutes."),
             },
             {
                 "name": "player_name",
-                "display": "Player Name (Hall of Fame)",
+                "display": text("setting.player_name", "Player Name (Hall of Fame)"),
                 "type": "string",
                 "default": "Chimera",
-                "description": "The name that a won game enters in the hall of fame "
+                "description": text("setting.player_name.about", "The name that a won game enters in the hall of fame "
                     "when its time earns a place there. It is entered as the"
                     " player would have typed it. Only printable characters "
                     "are used, and only as many as fit in the box (24 at "
                     "most). The controls have no letter keys, so the game "
-                    "enters the name by itself.",
+                    "enters the name by itself."),
             },
             {
                 "name": "sound",
-                "display": "Sound card",
+                "display": text("setting.sound", "Sound card"),
                 "type": "enum",
                 "options": ["digital", "pcSpeaker"],
                 "default": "digital",
-                "description": "'digital' is the Sound Blaster's digitized sound "
+                "description": text("setting.sound.about", "'digital' is the Sound Blaster's digitized sound "
                     "effects and the AdLib music, as SDLPoP plays them. "
                     "'pcSpeaker' is the PC speaker's sounds. The game waits "
                     "for some sounds to end (the music at the end of a "
                     "level, the title). So it is part of the machine, and a "
                     "movie needs the same value. 'digital' needs the DIGISND"
-                    " and MIDISND files.",
+                    " and MIDISND files."),
             },
             {
                 "name": "random_seed",
-                "display": "Random seed",
+                "display": text("setting.random_seed", "Random seed"),
                 "type": "int",
                 "default": 0,
                 "min": 0,
                 "max": 2147483647,
-                "description": "The starting value (seed) of the game's random number "
+                "description": text("setting.random_seed.about", "The starting value (seed) of the game's random number "
                     "generator. The DOS game took it from the clock. A movie"
-                    " records the number it ran with.",
+                    " records the number it ran with."),
             },
         ] + ini_settings(),
         "firmware": firmware,
@@ -286,6 +313,7 @@ def main():
     with open(out, "w") as f:
         json.dump(cfg, f, indent=2)
         f.write("\n")
+    write_texts(os.path.join(os.path.dirname(os.path.abspath(out)), "languages", "en.json"))
 
 
 if __name__ == "__main__":

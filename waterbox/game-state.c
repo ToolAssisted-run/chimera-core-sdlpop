@@ -23,6 +23,10 @@
 
 #include "sdlpop-driver.h"
 
+/* A text a person reads is a key of languages/en.json, each of its
+ * arguments after a TEXT_ARG (chimera docs/translations.md). */
+#define TEXT_ARG "\x1f"
+
 enum { T_U8, T_S8, T_U16, T_S16, T_U32, T_S32, T_U64, T_F32, T_BOOL };
 static const char *const k_type_name[] = { "u8", "s8", "u16", "s16", "u32", "s32", "u64", "f32", "bool" };
 static const int k_type_size[] = { 1, 1, 2, 2, 4, 4, 8, 4, 1 };
@@ -60,99 +64,99 @@ extern pop_hof_entry hof[6];
 
 static const prop k_props[] = {
 	/* the prince */
-	P("Kid.X", "Kid", T_U8, Kid.x, 1, NULL, "Horizontal position in the room, in game units (a tile is 14)"),
-	P("Kid.Y", "Kid", T_U8, Kid.y, 1, NULL, "Vertical position: the floor line he stands on (55, 118 or 181 in the room's three rows)"),
-	P("Kid.Room", "Kid", T_U8, Kid.room, 1, NULL, "The room he is in (1-24)"),
-	P("Kid.Direction", "Kid", T_S8, Kid.direction, 1, DIR_VALUES, "The way he faces"),
-	P("Kid.Frame", "Kid", T_U8, Kid.frame, 1, NULL, "Animation frame"),
-	P("Kid.Action", "Kid", T_U8, Kid.action, 1, ACTION_VALUES, "What his current sequence is doing"),
-	P("Kid.Column", "Kid", T_S8, Kid.curr_col, 1, NULL, "Tile column under him (0-9)"),
-	P("Kid.Row", "Kid", T_S8, Kid.curr_row, 1, NULL, "Tile row he is on (0-2)"),
-	P("Kid.Fall X", "Kid", T_S8, Kid.fall_x, 1, NULL, "Horizontal speed while falling or jumping"),
-	P("Kid.Fall Y", "Kid", T_S8, Kid.fall_y, 1, NULL, "Falling speed, also how far he has fallen (under 22 is one row, under 33 two)"),
-	P("Kid.Repeat", "Kid", T_U8, Kid.repeat, 1, NULL, "Repeat counter of his current sequence"),
-	P("Kid.Char Id", "Kid", T_U8, Kid.charid, 1, CHARID_VALUES, "Which character this slot is"),
-	P("Kid.Sword", "Kid", T_U8, Kid.sword, 1, SWORD_VALUES, "Whether his sword is drawn"),
-	P("Kid.Alive", "Kid", T_S8, Kid.alive, 1, NULL, "Negative while alive; counts up after he dies"),
-	P("Kid.Sequence", "Kid", T_U16, Kid.curr_seq, 1, NULL, "Position in the sequence table"),
-	P("Kid.HP", "Kid", T_U16, hitp_curr, 1, NULL, "Hit points"),
-	P("Kid.Max HP", "Kid", T_U16, hitp_max, 1, NULL, "Hit points he can have (the bottles on screen)"),
-	P("Kid.HP At Level Start", "Kid", T_U16, hitp_beg_lev, 1, NULL, "Hit points a restarted level gives back"),
-	P("Kid.Grab Timer", "Kid", T_U16, grab_timer, 1, NULL, "Ticks before he can grab a ledge again"),
-	P("Kid.Holding Sword", "Kid", T_U16, holding_sword, 1, NULL, "Nonzero while he holds the sword"),
-	P("Kid.Have Sword", "Kid", T_U16, have_sword, 1, NULL, "Nonzero once he has the sword"),
-	P("Kid.Sword Strike", "Kid", T_U16, kid_sword_strike, 1, NULL, "Nonzero during his sword strike"),
-	P("Kid.Pickup Object Type", "Kid", T_S16, pickup_obj_type, 1, NULL, "What he is picking up (potion type, or the sword)"),
-	P("Kid.Off Guard", "Kid", T_U16, offguard, 1, NULL, "Nonzero when he put the sword away in a fight"),
-	P("Kid.United With Shadow", "Kid", T_S16, united_with_shadow, 1, NULL, "Nonzero after he merges with his shadow (level 12)"),
-	P("Kid.Previous Frame", "Kid", T_U8, g_kid_prev_frame, 0, NULL, "Kid.Frame one step earlier"),
-	P("Kid.Pos X", "Kid", T_F32, g_kid_pos_x, 0, NULL, "Kid.X as a number (JaffarPlus's interpolated position)"),
-	P("Kid.Pos Y", "Kid", T_F32, g_kid_pos_y, 0, NULL, "Kid.Y adjusted through climbing, hanging and jump-grab frames (JaffarPlus's interpolated position)"),
+	P("Kid.X", "Kid", T_U8, Kid.x, 1, NULL, "property.kid_x"),
+	P("Kid.Y", "Kid", T_U8, Kid.y, 1, NULL, "property.kid_y"),
+	P("Kid.Room", "Kid", T_U8, Kid.room, 1, NULL, "property.kid_room"),
+	P("Kid.Direction", "Kid", T_S8, Kid.direction, 1, DIR_VALUES, "property.kid_direction"),
+	P("Kid.Frame", "Kid", T_U8, Kid.frame, 1, NULL, "property.kid_frame"),
+	P("Kid.Action", "Kid", T_U8, Kid.action, 1, ACTION_VALUES, "property.kid_action"),
+	P("Kid.Column", "Kid", T_S8, Kid.curr_col, 1, NULL, "property.kid_column"),
+	P("Kid.Row", "Kid", T_S8, Kid.curr_row, 1, NULL, "property.kid_row"),
+	P("Kid.Fall X", "Kid", T_S8, Kid.fall_x, 1, NULL, "property.kid_fall_x"),
+	P("Kid.Fall Y", "Kid", T_S8, Kid.fall_y, 1, NULL, "property.kid_fall_y"),
+	P("Kid.Repeat", "Kid", T_U8, Kid.repeat, 1, NULL, "property.kid_repeat"),
+	P("Kid.Char Id", "Kid", T_U8, Kid.charid, 1, CHARID_VALUES, "property.kid_char_id"),
+	P("Kid.Sword", "Kid", T_U8, Kid.sword, 1, SWORD_VALUES, "property.kid_sword"),
+	P("Kid.Alive", "Kid", T_S8, Kid.alive, 1, NULL, "property.kid_alive"),
+	P("Kid.Sequence", "Kid", T_U16, Kid.curr_seq, 1, NULL, "property.kid_sequence"),
+	P("Kid.HP", "Kid", T_U16, hitp_curr, 1, NULL, "setting.start_hitp"),
+	P("Kid.Max HP", "Kid", T_U16, hitp_max, 1, NULL, "property.kid_max_hp"),
+	P("Kid.HP At Level Start", "Kid", T_U16, hitp_beg_lev, 1, NULL, "property.kid_hp_at_level_start"),
+	P("Kid.Grab Timer", "Kid", T_U16, grab_timer, 1, NULL, "property.kid_grab_timer"),
+	P("Kid.Holding Sword", "Kid", T_U16, holding_sword, 1, NULL, "property.kid_holding_sword"),
+	P("Kid.Have Sword", "Kid", T_U16, have_sword, 1, NULL, "property.kid_have_sword"),
+	P("Kid.Sword Strike", "Kid", T_U16, kid_sword_strike, 1, NULL, "property.kid_sword_strike"),
+	P("Kid.Pickup Object Type", "Kid", T_S16, pickup_obj_type, 1, NULL, "property.kid_pickup_object_type"),
+	P("Kid.Off Guard", "Kid", T_U16, offguard, 1, NULL, "property.kid_off_guard"),
+	P("Kid.United With Shadow", "Kid", T_S16, united_with_shadow, 1, NULL, "property.kid_united_with_shadow"),
+	P("Kid.Previous Frame", "Kid", T_U8, g_kid_prev_frame, 0, NULL, "property.kid_previous_frame"),
+	P("Kid.Pos X", "Kid", T_F32, g_kid_pos_x, 0, NULL, "property.kid_pos_x"),
+	P("Kid.Pos Y", "Kid", T_F32, g_kid_pos_y, 0, NULL, "property.kid_pos_y"),
 
 	/* the guard in the room (also the shadow, a skeleton, Jaffar) */
-	P("Guard.X", "Guard", T_U8, Guard.x, 1, NULL, "Horizontal position in the room, in game units"),
-	P("Guard.Y", "Guard", T_U8, Guard.y, 1, NULL, "Vertical position (a floor line)"),
-	P("Guard.Room", "Guard", T_U8, Guard.room, 1, NULL, "The room he is in (1-24)"),
-	P("Guard.Direction", "Guard", T_S8, Guard.direction, 1, DIR_VALUES, "The way he faces; None when there is no guard"),
-	P("Guard.Frame", "Guard", T_U8, Guard.frame, 1, NULL, "Animation frame"),
-	P("Guard.Action", "Guard", T_U8, Guard.action, 1, ACTION_VALUES, "What his current sequence is doing"),
-	P("Guard.Column", "Guard", T_S8, Guard.curr_col, 1, NULL, "Tile column under him"),
-	P("Guard.Row", "Guard", T_S8, Guard.curr_row, 1, NULL, "Tile row he is on"),
-	P("Guard.Fall X", "Guard", T_S8, Guard.fall_x, 1, NULL, "Horizontal speed while falling"),
-	P("Guard.Fall Y", "Guard", T_S8, Guard.fall_y, 1, NULL, "Falling speed"),
-	P("Guard.Repeat", "Guard", T_U8, Guard.repeat, 1, NULL, "Repeat counter of his current sequence"),
-	P("Guard.Char Id", "Guard", T_U8, Guard.charid, 1, CHARID_VALUES, "Which character he is"),
-	P("Guard.Sword", "Guard", T_U8, Guard.sword, 1, SWORD_VALUES, "Whether his sword is drawn"),
-	P("Guard.Alive", "Guard", T_S8, Guard.alive, 1, NULL, "Negative while alive"),
-	P("Guard.Sequence", "Guard", T_U16, Guard.curr_seq, 1, NULL, "Position in the sequence table"),
-	P("Guard.HP", "Guard", T_U16, guardhp_curr, 1, NULL, "Hit points"),
-	P("Guard.Max HP", "Guard", T_U16, guardhp_max, 1, NULL, "Hit points he started with"),
-	P("Guard.Color", "Guard", T_U16, curr_guard_color, 1, NULL, "Palette of his clothes"),
-	P("Guard.Skill", "Guard", T_U16, guard_skill, 1, NULL, "Fighting skill (0-11)"),
-	P("Guard.Notice Timer", "Guard", T_S16, guard_notice_timer, 1, NULL, "Ticks before he reacts to the prince"),
-	P("Guard.Refrac", "Guard", T_U16, guard_refrac, 1, NULL, "Ticks before he can strike again"),
-	P("Guard.Just Blocked", "Guard", T_U16, justblocked, 1, NULL, "Nonzero right after a block"),
-	P("Guard.Dropped Out", "Guard", T_U16, droppedout, 1, NULL, "Nonzero once he has fallen out of the room"),
-	P("Guard.Is Noticing", "Guard", T_U16, is_guard_notice, 1, NULL, "Nonzero while he notices the prince"),
-	P("Guard.Can See Kid", "Guard", T_S16, can_guard_see_kid, 1, NULL, "0 cannot see him, 1 sees him, 2 sees him and nothing is in between"),
-	P("Guard.Shadow Initialized", "Guard", T_U16, shadow_initialized, 1, NULL, "Nonzero once the shadow has been set up on this level"),
+	P("Guard.X", "Guard", T_U8, Guard.x, 1, NULL, "property.guard_x"),
+	P("Guard.Y", "Guard", T_U8, Guard.y, 1, NULL, "property.guard_y"),
+	P("Guard.Room", "Guard", T_U8, Guard.room, 1, NULL, "property.kid_room"),
+	P("Guard.Direction", "Guard", T_S8, Guard.direction, 1, DIR_VALUES, "property.guard_direction"),
+	P("Guard.Frame", "Guard", T_U8, Guard.frame, 1, NULL, "property.kid_frame"),
+	P("Guard.Action", "Guard", T_U8, Guard.action, 1, ACTION_VALUES, "property.kid_action"),
+	P("Guard.Column", "Guard", T_S8, Guard.curr_col, 1, NULL, "property.guard_column"),
+	P("Guard.Row", "Guard", T_S8, Guard.curr_row, 1, NULL, "property.guard_row"),
+	P("Guard.Fall X", "Guard", T_S8, Guard.fall_x, 1, NULL, "property.guard_fall_x"),
+	P("Guard.Fall Y", "Guard", T_S8, Guard.fall_y, 1, NULL, "property.guard_fall_y"),
+	P("Guard.Repeat", "Guard", T_U8, Guard.repeat, 1, NULL, "property.kid_repeat"),
+	P("Guard.Char Id", "Guard", T_U8, Guard.charid, 1, CHARID_VALUES, "property.guard_char_id"),
+	P("Guard.Sword", "Guard", T_U8, Guard.sword, 1, SWORD_VALUES, "property.kid_sword"),
+	P("Guard.Alive", "Guard", T_S8, Guard.alive, 1, NULL, "property.guard_alive"),
+	P("Guard.Sequence", "Guard", T_U16, Guard.curr_seq, 1, NULL, "property.kid_sequence"),
+	P("Guard.HP", "Guard", T_U16, guardhp_curr, 1, NULL, "setting.start_hitp"),
+	P("Guard.Max HP", "Guard", T_U16, guardhp_max, 1, NULL, "property.guard_max_hp"),
+	P("Guard.Color", "Guard", T_U16, curr_guard_color, 1, NULL, "property.guard_color"),
+	P("Guard.Skill", "Guard", T_U16, guard_skill, 1, NULL, "property.guard_skill"),
+	P("Guard.Notice Timer", "Guard", T_S16, guard_notice_timer, 1, NULL, "property.guard_notice_timer"),
+	P("Guard.Refrac", "Guard", T_U16, guard_refrac, 1, NULL, "property.guard_refrac"),
+	P("Guard.Just Blocked", "Guard", T_U16, justblocked, 1, NULL, "property.guard_just_blocked"),
+	P("Guard.Dropped Out", "Guard", T_U16, droppedout, 1, NULL, "property.guard_dropped_out"),
+	P("Guard.Is Noticing", "Guard", T_U16, is_guard_notice, 1, NULL, "property.guard_is_noticing"),
+	P("Guard.Can See Kid", "Guard", T_S16, can_guard_see_kid, 1, NULL, "property.guard_can_see_kid"),
+	P("Guard.Shadow Initialized", "Guard", T_U16, shadow_initialized, 1, NULL, "property.guard_shadow_initialized"),
 
 	/* the level being played */
-	P("Level.Current", "Level", T_U16, current_level, 0, NULL, "The level being played (a poke does not load another; see Level.Next)"),
-	P("Level.Next", "Level", T_U16, next_level, 1, NULL, "The level the game goes to when this tick ends; set it to leave the level"),
-	P("Level.Checkpoint", "Level", T_U16, checkpoint, 1, NULL, "Nonzero once level 3's checkpoint is reached"),
-	P("Level.Upside Down", "Level", T_U16, upside_down, 1, NULL, "Nonzero while the screen is upside down (the level 7 potion)"),
-	P("Level.Drawn Room", "Level", T_U16, drawn_room, 1, NULL, "The room on screen"),
-	P("Level.Door Open", "Level", T_U16, leveldoor_open, 1, NULL, "Nonzero once the exit door is open; 2 when it has been entered"),
-	P("Level.Moving Objects", "Level", T_S16, mobs_count, 1, NULL, "How many Mob[] slots are in use"),
-	P("Level.Tile Animations", "Level", T_S16, trobs_count, 1, NULL, "How many Trob[] slots are in use"),
-	P("Level.Exit Room Timer", "Level", T_U16, exit_room_timer, 1, NULL, "Ticks before a room change can happen again"),
-	P("Level.Jumped Through Mirror", "Level", T_S16, jumped_through_mirror, 1, NULL, "Level 4's mirror: -1 once the prince has jumped through it"),
-	P("Level.Demo Index", "Level", T_U16, demo_index, 1, NULL, "Position in the demo level's recorded moves"),
-	P("Level.Demo Time", "Level", T_S16, demo_time, 1, NULL, "Ticks left of the demo level's current move"),
+	P("Level.Current", "Level", T_U16, current_level, 0, NULL, "property.level_current"),
+	P("Level.Next", "Level", T_U16, next_level, 1, NULL, "property.level_next"),
+	P("Level.Checkpoint", "Level", T_U16, checkpoint, 1, NULL, "property.level_checkpoint"),
+	P("Level.Upside Down", "Level", T_U16, upside_down, 1, NULL, "property.level_upside_down"),
+	P("Level.Drawn Room", "Level", T_U16, drawn_room, 1, NULL, "property.level_drawn_room"),
+	P("Level.Door Open", "Level", T_U16, leveldoor_open, 1, NULL, "property.level_door_open"),
+	P("Level.Moving Objects", "Level", T_S16, mobs_count, 1, NULL, "property.level_moving_objects"),
+	P("Level.Tile Animations", "Level", T_S16, trobs_count, 1, NULL, "property.level_tile_animations"),
+	P("Level.Exit Room Timer", "Level", T_U16, exit_room_timer, 1, NULL, "property.level_exit_room_timer"),
+	P("Level.Jumped Through Mirror", "Level", T_S16, jumped_through_mirror, 1, NULL, "property.level_jumped_through_mirror"),
+	P("Level.Demo Index", "Level", T_U16, demo_index, 1, NULL, "property.level_demo_index"),
+	P("Level.Demo Time", "Level", T_S16, demo_time, 1, NULL, "property.level_demo_time"),
 
 	/* the clock of the game (not the core's) */
-	P("Time.Minutes Left", "Time", T_S16, rem_min, 1, NULL, "Minutes left on the game's clock (negative: no time limit)"),
-	P("Time.Ticks Left", "Time", T_U16, rem_tick, 1, NULL, "Ticks left in the current minute, 12 a second (719 down to 0)"),
+	P("Time.Minutes Left", "Time", T_S16, rem_min, 1, NULL, "property.time_minutes_left"),
+	P("Time.Ticks Left", "Time", T_U16, rem_tick, 1, NULL, "property.time_ticks_left"),
 
-	P("Time.IGT Ticks", "Time", T_U32, g_igt_ticks, 0, NULL, "The in-game time: the ticks the game's clock has counted down since the game started (a minute is 719 of them; the clock stops in cutscenes, on the potions level and after Jaffar)"),
-	P("Time.IGT Ms", "Time", T_U32, g_igt_ms, 0, NULL, "The in-game time in milliseconds, 12 ticks a second (as quickerSDLPoP shows it: IGT mm:ss.mmm)"),
-	P("Time.Core Clock", "Time", T_U64, g_core_clock, 0, NULL, "The core's clock since power-on, 1,764,000 counts a second (what the steps are measured in)"),
+	P("Time.IGT Ticks", "Time", T_U32, g_igt_ticks, 0, NULL, "property.time_igt_ticks"),
+	P("Time.IGT Ms", "Time", T_U32, g_igt_ms, 0, NULL, "property.time_igt_ms"),
+	P("Time.Core Clock", "Time", T_U64, g_core_clock, 0, NULL, "property.time_core_clock"),
 
-	P("Random Seed", "Random", T_U32, random_seed, 1, NULL, "The game's random number generator (seed = seed * 214013 + 2531011 at each draw)"),
+	P("Random Seed", "Random", T_U32, random_seed, 1, NULL, "property.random_seed"),
 
-	P("Sound.Need Level 1 Music", "Sound", T_U16, need_level1_music, 1, NULL, "Nonzero until level 1's opening music has played"),
-	P("Sound.Is Screaming", "Sound", T_U16, is_screaming, 1, NULL, "Nonzero while the falling scream plays"),
-	P("Sound.Last Loose Sound", "Sound", T_U16, last_loose_sound, 1, NULL, "Which of the loose floor sounds played last"),
+	P("Sound.Need Level 1 Music", "Sound", T_U16, need_level1_music, 1, NULL, "property.sound_need_level_1_music"),
+	P("Sound.Is Screaming", "Sound", T_U16, is_screaming, 1, NULL, "property.sound_is_screaming"),
+	P("Sound.Last Loose Sound", "Sound", T_U16, last_loose_sound, 1, NULL, "property.sound_last_loose_sound"),
 
-	P("Effects.Flash Color", "Effects", T_U16, flash_color, 1, NULL, "Color of the screen flash"),
-	P("Effects.Flash Time", "Effects", T_U16, flash_time, 1, NULL, "Ticks of screen flash left"),
-	P("Effects.Feather Fall", "Effects", T_U16, is_feather_fall, 1, NULL, "Ticks of feather fall left (the green potion)"),
+	P("Effects.Flash Color", "Effects", T_U16, flash_color, 1, NULL, "property.effects_flash_color"),
+	P("Effects.Flash Time", "Effects", T_U16, flash_time, 1, NULL, "property.effects_flash_time"),
+	P("Effects.Feather Fall", "Effects", T_U16, is_feather_fall, 1, NULL, "property.effects_feather_fall"),
 
-	P("Collision.Row", "Collision", T_S8, collision_row, 1, NULL, "Row the last collision was checked on"),
-	P("Collision.Previous Row", "Collision", T_S8, prev_collision_row, 1, NULL, "Row the collision before it was checked on"),
+	P("Collision.Row", "Collision", T_S8, collision_row, 1, NULL, "property.collision_row"),
+	P("Collision.Previous Row", "Collision", T_S8, prev_collision_row, 1, NULL, "property.collision_previous_row"),
 
-	P("Hall of Fame.Entries", "Hall of Fame", T_S16, hof_count, 1, NULL, "How many Hall of Fame entries are filled"),
+	P("Hall of Fame.Entries", "Hall of Fame", T_S16, hof_count, 1, NULL, "property.hall_of_fame_entries"),
 };
 #define PROP_COUNT ((int)(sizeof k_props / sizeof k_props[0]))
 
@@ -313,7 +317,7 @@ int gamestate_init(char *err, int errsize)
 	}
 	if (off > (int)sizeof g_block)
 	{
-		snprintf(err, (size_t)errsize, "the property block needs %d bytes", off);
+		snprintf(err, (size_t)errsize, "error.property_block" TEXT_ARG "%d", off);
 		return 0;
 	}
 	g_block_size = off;
@@ -332,10 +336,10 @@ int gamestate_init(char *err, int errsize)
 	/* the level, in place */
 	{
 		entry_t e[] = {
-			{ "Level.Start Room", "Level", "Level", offsetof(level_type, start_room), T_U8, 0, 0, 0, 0, 0, 1, NULL, "The room the level starts in" },
-			{ "Level.Start Position", "Level", "Level", offsetof(level_type, start_pos), T_U8, 0, 0, 0, 0, 0, 1, NULL, "The tile the level starts on (0-29)" },
-			{ "Level.Start Direction", "Level", "Level", offsetof(level_type, start_dir), T_S8, 0, 0, 0, 0, 0, 1, DIR_VALUES, "The way the prince faces at the start" },
-			{ "Level.Used Rooms", "Level", "Level", offsetof(level_type, used_rooms), T_U8, 0, 0, 0, 0, 0, 1, NULL, "How many rooms the level has" },
+			{ "Level.Start Room", "Level", "Level", offsetof(level_type, start_room), T_U8, 0, 0, 0, 0, 0, 1, NULL, "property.level_start_room" },
+			{ "Level.Start Position", "Level", "Level", offsetof(level_type, start_pos), T_U8, 0, 0, 0, 0, 0, 1, NULL, "property.level_start_position" },
+			{ "Level.Start Direction", "Level", "Level", offsetof(level_type, start_dir), T_S8, 0, 0, 0, 0, 0, 1, DIR_VALUES, "property.level_start_direction" },
+			{ "Level.Used Rooms", "Level", "Level", offsetof(level_type, used_rooms), T_U8, 0, 0, 0, 0, 0, 1, NULL, "property.level_used_rooms" },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}
@@ -350,11 +354,11 @@ int gamestate_init(char *err, int errsize)
 		const size_t at = (size_t)(r - 1) * 30;
 		entry_t e[] = {
 			{ n1, "Level", "Tiles", offsetof(level_type, fg) + at, T_U8, 30, 1, 0, 5, 0, 1, TILE_VALUES,
-			  r == 1 ? "The tile, element i being tile i (0-9 the top row, 10-19, 20-29)" : NULL },
+			  r == 1 ? "property.room_tile" : NULL },
 			{ n2, "Level", "Tiles", offsetof(level_type, fg) + at, T_U8, 30, 1, 5, 1, 0, 1, NULL,
-			  r == 1 ? "Bit 5 of the tile byte: on a loose floor, one that does not fall" : NULL },
+			  r == 1 ? "property.room_tile_flag" : NULL },
 			{ n3, "Level", "Tiles", offsetof(level_type, bg) + at, T_U8, 30, 1, 0, 0, 0, 1, NULL,
-			  r == 1 ? "The tile's modifier: a gate's openness, a potion's kind, a button's first event, a chomper's phase" : NULL },
+			  r == 1 ? "property.room_modifier" : NULL },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}
@@ -362,23 +366,23 @@ int gamestate_init(char *err, int errsize)
 		const size_t links = offsetof(level_type, roomlinks);
 		const int ls = (int)sizeof(link_type);
 		entry_t e[] = {
-			{ "Room Links.Left", "Level", "Rooms", links + offsetof(link_type, left), T_U8, 24, ls, 0, 0, 0, 1, NULL, "The room beyond the left edge of room i+1 (0: none)" },
-			{ "Room Links.Right", "Level", "Rooms", links + offsetof(link_type, right), T_U8, 24, ls, 0, 0, 0, 1, NULL, "The room beyond the right edge of room i+1 (0: none)" },
-			{ "Room Links.Up", "Level", "Rooms", links + offsetof(link_type, up), T_U8, 24, ls, 0, 0, 0, 1, NULL, "The room above room i+1 (0: none)" },
-			{ "Room Links.Down", "Level", "Rooms", links + offsetof(link_type, down), T_U8, 24, ls, 0, 0, 0, 1, NULL, "The room below room i+1 (0: none)" },
-			{ "Room Guards.Tile", "Level", "Rooms", offsetof(level_type, guards_tile), T_U8, 24, 1, 0, 0, 0, 1, NULL, "The tile room i+1's guard starts on (30 or more: no guard)" },
-			{ "Room Guards.Direction", "Level", "Rooms", offsetof(level_type, guards_dir), T_U8, 24, 1, 0, 0, 0, 1, "{\"0\": \"Right\", \"255\": \"Left\"}", "The way room i+1's guard faces" },
-			{ "Room Guards.X", "Level", "Rooms", offsetof(level_type, guards_x), T_U8, 24, 1, 0, 0, 0, 1, NULL, "Room i+1's guard's position within his tile" },
-			{ "Room Guards.Sequence Low", "Level", "Rooms", offsetof(level_type, guards_seq_lo), T_U8, 24, 1, 0, 0, 0, 1, NULL, "Room i+1's guard's sequence, low byte (a guard remembered in another room)" },
-			{ "Room Guards.Skill", "Level", "Rooms", offsetof(level_type, guards_skill), T_U8, 24, 1, 0, 0, 0, 1, NULL, "Room i+1's guard's fighting skill" },
-			{ "Room Guards.Sequence High", "Level", "Rooms", offsetof(level_type, guards_seq_hi), T_U8, 24, 1, 0, 0, 0, 1, NULL, "Room i+1's guard's sequence, high byte" },
-			{ "Room Guards.Color", "Level", "Rooms", offsetof(level_type, guards_color), T_U8, 24, 1, 0, 0, 0, 1, NULL, "Room i+1's guard's clothes" },
+			{ "Room Links.Left", "Level", "Rooms", links + offsetof(link_type, left), T_U8, 24, ls, 0, 0, 0, 1, NULL, "property.room_links_left" },
+			{ "Room Links.Right", "Level", "Rooms", links + offsetof(link_type, right), T_U8, 24, ls, 0, 0, 0, 1, NULL, "property.room_links_right" },
+			{ "Room Links.Up", "Level", "Rooms", links + offsetof(link_type, up), T_U8, 24, ls, 0, 0, 0, 1, NULL, "property.room_links_up" },
+			{ "Room Links.Down", "Level", "Rooms", links + offsetof(link_type, down), T_U8, 24, ls, 0, 0, 0, 1, NULL, "property.room_links_down" },
+			{ "Room Guards.Tile", "Level", "Rooms", offsetof(level_type, guards_tile), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_tile" },
+			{ "Room Guards.Direction", "Level", "Rooms", offsetof(level_type, guards_dir), T_U8, 24, 1, 0, 0, 0, 1, "{\"0\": \"Right\", \"255\": \"Left\"}", "property.room_guards_direction" },
+			{ "Room Guards.X", "Level", "Rooms", offsetof(level_type, guards_x), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_x" },
+			{ "Room Guards.Sequence Low", "Level", "Rooms", offsetof(level_type, guards_seq_lo), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_sequence_low" },
+			{ "Room Guards.Skill", "Level", "Rooms", offsetof(level_type, guards_skill), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_skill" },
+			{ "Room Guards.Sequence High", "Level", "Rooms", offsetof(level_type, guards_seq_hi), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_sequence_high" },
+			{ "Room Guards.Color", "Level", "Rooms", offsetof(level_type, guards_color), T_U8, 24, 1, 0, 0, 0, 1, NULL, "property.room_guards_color" },
 			/* the 256 button events, packed as SDLPoP's get_doorlink_* unpack them */
-			{ "Events.Tile", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 0, 5, 0, 1, NULL, "The tile (0-29) of the door event i opens or closes" },
-			{ "Events.Room Low", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 5, 2, 0, 1, NULL, "The door's room, low two bits (room = Room Low + 4 x Room High)" },
-			{ "Events.Last", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 7, 1, 0, 1, NULL, "1 when event i is the last its button triggers" },
-			{ "Events.Timer", "Level", "Events", offsetof(level_type, doorlinks2), T_U8, 256, 1, 0, 5, 0, 1, NULL, "Event i's timer (a jammed button's is 0x1F)" },
-			{ "Events.Room High", "Level", "Events", offsetof(level_type, doorlinks2), T_U8, 256, 1, 5, 3, 0, 1, NULL, "The door's room, high three bits" },
+			{ "Events.Tile", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 0, 5, 0, 1, NULL, "property.events_tile" },
+			{ "Events.Room Low", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 5, 2, 0, 1, NULL, "property.events_room_low" },
+			{ "Events.Last", "Level", "Events", offsetof(level_type, doorlinks1), T_U8, 256, 1, 7, 1, 0, 1, NULL, "property.events_last" },
+			{ "Events.Timer", "Level", "Events", offsetof(level_type, doorlinks2), T_U8, 256, 1, 0, 5, 0, 1, NULL, "property.events_timer" },
+			{ "Events.Room High", "Level", "Events", offsetof(level_type, doorlinks2), T_U8, 256, 1, 5, 3, 0, 1, NULL, "property.events_room_high" },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}
@@ -387,18 +391,18 @@ int gamestate_init(char *err, int errsize)
 	{
 		const int ms = (int)sizeof(mob_type), ts = (int)sizeof(trob_type), hs = (int)sizeof(pop_hof_entry);
 		entry_t e[] = {
-			{ "Mobs.X", "Mobs", "Moving Objects", offsetof(mob_type, xh), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, "A falling loose floor's horizontal position (the first Level.Moving Objects are in use)" },
+			{ "Mobs.X", "Mobs", "Moving Objects", offsetof(mob_type, xh), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, "property.mobs_x" },
 			{ "Mobs.Y", "Mobs", "Moving Objects", offsetof(mob_type, y), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, NULL },
 			{ "Mobs.Room", "Mobs", "Moving Objects", offsetof(mob_type, room), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, NULL },
 			{ "Mobs.Speed", "Mobs", "Moving Objects", offsetof(mob_type, speed), T_S8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, NULL },
 			{ "Mobs.Type", "Mobs", "Moving Objects", offsetof(mob_type, type), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, NULL },
 			{ "Mobs.Row", "Mobs", "Moving Objects", offsetof(mob_type, row), T_U8, MOB_COUNT, ms, 0, 0, 0, 1, NULL, NULL },
-			{ "Trobs.Tile", "Trobs", "Tile Animations", offsetof(trob_type, tilepos), T_U8, TROB_COUNT, ts, 0, 0, 0, 1, NULL, "An animating tile - a gate, a button, a chomper, a potion (the first Level.Tile Animations are in use)" },
+			{ "Trobs.Tile", "Trobs", "Tile Animations", offsetof(trob_type, tilepos), T_U8, TROB_COUNT, ts, 0, 0, 0, 1, NULL, "property.trobs_tile" },
 			{ "Trobs.Room", "Trobs", "Tile Animations", offsetof(trob_type, room), T_U8, TROB_COUNT, ts, 0, 0, 0, 1, NULL, NULL },
 			{ "Trobs.Type", "Trobs", "Tile Animations", offsetof(trob_type, type), T_S8, TROB_COUNT, ts, 0, 0, 0, 1, NULL, NULL },
-			{ "Hall of Fame.Name", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, name), T_U8, 6, hs, 0, 0, 25, 1, NULL, "The names entered after winning, best time first" },
-			{ "Hall of Fame.Minutes", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, min), T_S16, 6, hs, 0, 0, 0, 1, NULL, "Minutes that were left" },
-			{ "Hall of Fame.Ticks", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, tick), T_S16, 6, hs, 0, 0, 0, 1, NULL, "Ticks that were left in the minute" },
+			{ "Hall of Fame.Name", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, name), T_U8, 6, hs, 0, 0, 25, 1, NULL, "property.hall_of_fame_name" },
+			{ "Hall of Fame.Minutes", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, min), T_S16, 6, hs, 0, 0, 0, 1, NULL, "property.hall_of_fame_minutes" },
+			{ "Hall of Fame.Ticks", "Hall of Fame", "Hall of Fame", offsetof(pop_hof_entry, tick), T_S16, 6, hs, 0, 0, 0, 1, NULL, "property.hall_of_fame_ticks" },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}
@@ -409,14 +413,14 @@ int gamestate_init(char *err, int errsize)
 	{
 		const int w = 2;
 		entry_t e[] = {
-			{ "Guard Skills.Strike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, strikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely a guard of skill i is to strike" },
-			{ "Guard Skills.Restrike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, restrikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to strike again after a blocked strike" },
-			{ "Guard Skills.Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, blockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to block a strike" },
-			{ "Guard Skills.Impaired Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, impblockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to block while impaired" },
-			{ "Guard Skills.Advance Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, advprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "Out of 255: how likely he is to advance" },
-			{ "Guard Skills.Refractory Timer", "Custom Options", "Guard Skills", offsetof(custom_options_type, refractimer), T_U16, 12, w, 0, 0, 0, 1, NULL, "Ticks he waits after a strike" },
-			{ "Guard Skills.Extra Strength", "Custom Options", "Guard Skills", offsetof(custom_options_type, extrastrength), T_U16, 12, w, 0, 0, 0, 1, NULL, "Hit points he has beyond his level's" },
-			{ "Level Colours", "Custom Options", "Levels", offsetof(custom_options_type, tbl_level_color), T_U16, 16, w, 0, 0, 0, 1, NULL, "Level i's colour variation (0: none; 1.3 and 1.4 only)" },
+			{ "Guard Skills.Strike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, strikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_strike_probability" },
+			{ "Guard Skills.Restrike Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, restrikeprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_restrike_probability" },
+			{ "Guard Skills.Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, blockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_block_probability" },
+			{ "Guard Skills.Impaired Block Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, impblockprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_impaired_block_probability" },
+			{ "Guard Skills.Advance Probability", "Custom Options", "Guard Skills", offsetof(custom_options_type, advprob), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_advance_probability" },
+			{ "Guard Skills.Refractory Timer", "Custom Options", "Guard Skills", offsetof(custom_options_type, refractimer), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_refractory_timer" },
+			{ "Guard Skills.Extra Strength", "Custom Options", "Guard Skills", offsetof(custom_options_type, extrastrength), T_U16, 12, w, 0, 0, 0, 1, NULL, "property.guard_skills_extra_strength" },
+			{ "Level Colours", "Custom Options", "Levels", offsetof(custom_options_type, tbl_level_color), T_U16, 16, w, 0, 0, 0, 1, NULL, "property.level_colours" },
 		};
 		for (size_t k = 0; k < sizeof e / sizeof e[0]; k++) entry(&b, &e[k]);
 	}

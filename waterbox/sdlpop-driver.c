@@ -587,6 +587,11 @@ static const pop_setting k_settings[] = {
 #define POP_KIND_BOOL 1
 #define POP_KIND_INT 0
 #include "settings.inc"
+
+/* A text a person reads is a key of languages/en.json, each of its
+ * arguments after a TEXT_ARG (chimera docs/translations.md). TEXT_ARG is a
+ * string of its own so the byte after it is never read as more of its hex. */
+#define TEXT_ARG "\x1f"
 #undef POP_SETTING
 };
 #define POP_SETTING_COUNT ((int)(sizeof k_settings / sizeof k_settings[0]))
@@ -684,8 +689,7 @@ static int check_files(char *err, int errsize)
 	}
 	if (nmissing)
 	{
-		snprintf(err, (size_t)errsize, "Prince of Persia %s needs %s - add %s as the project's firmware.",
-		         rel, missing, nmissing > 1 ? "them" : "it");
+		snprintf(err, (size_t)errsize, "error.needs_files" TEXT_ARG "%d" TEXT_ARG "%s" TEXT_ARG "%s", nmissing, rel, missing);
 		return 0;
 	}
 	return 1;
@@ -720,19 +724,19 @@ static int load_slots(char *err, int errsize)
 		long n = load_save(SAVE_QUICK, path);
 		if (n < 0)
 		{
-			snprintf(err, (size_t)errsize, "the project's savestate %s is not there", path);
+			snprintf(err, (size_t)errsize, "error.savestate_missing" TEXT_ARG "%s", path);
 			return 0;
 		}
 		g_quick_size = sizeof quick_version;
 		quick_process(count_quick);
 		if ((size_t)n < sizeof quick_version || memcmp(g.saves[SAVE_QUICK].data, quick_version, sizeof quick_version) != 0)
 		{
-			snprintf(err, (size_t)errsize, "the project's savestate %s is not an SDLPoP quicksave (QUICKSAVE.SAV, which starts \"%s\")", path, quick_version);
+			snprintf(err, (size_t)errsize, "error.not_quicksave" TEXT_ARG "%s" TEXT_ARG "%s", path, quick_version);
 			return 0;
 		}
 		if ((size_t)n != g_quick_size)
 		{
-			snprintf(err, (size_t)errsize, "the project's savestate %s is %ld bytes; a quicksave of this SDLPoP (%s) is %zu - it was made by another SDLPoP build",
+			snprintf(err, (size_t)errsize, "error.quicksave_size" TEXT_ARG "%s" TEXT_ARG "%ld" TEXT_ARG "%s" TEXT_ARG "%zu",
 			         path, n, SDLPOP_VERSION, g_quick_size);
 			return 0;
 		}
@@ -751,7 +755,7 @@ int popdrv_init(char *err, int errsize)
 		if (!strcmp(version, k_releases[r].name)) g.release = &k_releases[r];
 	if (!g.release)
 	{
-		snprintf(err, (size_t)errsize, "unknown version setting '%s' (1.0, 1.1, 1.3 or 1.4)", version);
+		snprintf(err, (size_t)errsize, "error.bad_version" TEXT_ARG "%s", version);
 		return 0;
 	}
 	g.cheats = wbx_setting_bool("cheats", 0) != 0;
@@ -762,7 +766,7 @@ int popdrv_init(char *err, int errsize)
 	for (const char *c = g.player_name; *c; c++) printable |= *c >= 0x20 && *c <= 0x7E && *c != ' ';
 	if (!printable)
 	{
-		snprintf(err, (size_t)errsize, "the Player Name (Hall of Fame) setting has nothing the game can show - give it a name");
+		snprintf(err, (size_t)errsize, "error.no_player_name");
 		return 0;
 	}
 
@@ -772,7 +776,7 @@ int popdrv_init(char *err, int errsize)
 	else if (!strcmp(sound, "pcSpeaker")) g.digital_sound = 0;
 	else
 	{
-		snprintf(err, (size_t)errsize, "unknown sound setting '%s'", sound);
+		snprintf(err, (size_t)errsize, "error.bad_sound" TEXT_ARG "%s", sound);
 		return 0;
 	}
 	unsigned long seed = (unsigned long)wbx_setting_long("random_seed", 0) & 0xFFFFFFFFul;
@@ -785,7 +789,7 @@ int popdrv_init(char *err, int errsize)
 		FILE *f = __real_fopen(g.levels, "rb");
 		if (!f)
 		{
-			snprintf(err, (size_t)errsize, "the project's level set %s is not there", g.levels);
+			snprintf(err, (size_t)errsize, "error.levels_missing" TEXT_ARG "%s", g.levels);
 			return 0;
 		}
 		fclose(f);
@@ -819,7 +823,7 @@ int popdrv_init(char *err, int errsize)
 	g.game_sp = chimera_co_create(4u << 20);
 	if (!g.game_sp)
 	{
-		snprintf(err, (size_t)errsize, "no memory for the game's stack");
+		snprintf(err, (size_t)errsize, "error.no_stack");
 		return 0;
 	}
 
@@ -828,7 +832,7 @@ int popdrv_init(char *err, int errsize)
 	chimera_co_switch(&g.host_sp, g.game_sp);
 	if (g.over)
 	{
-		snprintf(err, (size_t)errsize, "the game stopped while starting (exit %d)", g.exit_code);
+		snprintf(err, (size_t)errsize, "error.stopped_starting" TEXT_ARG "%d", g.exit_code);
 		return 0;
 	}
 	g.started = 1;

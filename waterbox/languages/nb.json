@@ -263,7 +263,7 @@
 		"setting.start_minutes_left": "Minutter",
 		"setting.start_minutes_left.about": "Minuttene på klokken ved starten. Originalspillet har 60. -1 betyr ingen tidsgrense.",
 		"setting.use_fixes_and_enhancements": "Rettelser og forbedringer",
-		"setting.use_fixes_and_enhancements.about": "SDLPoPs rettelser av originalspillets feil og dets spillforbedringer. Av er originalspillet. På bruker de innstillingene nedenfor som er slått på (alle er av som standard).",
+		"setting.use_fixes_and_enhancements.about": "Rettelsene i SDLPoP av originalspillets feil og dets spillforbedringer. Av er originalspillet. På bruker de innstillingene nedenfor som er slått på (alle er av som standard).",
 		"setting.version": "Versjon",
 		"setting.version.about": "Hvilken utgivelse av Prince of Persia som spilles. Prosjektet leverer filene til den utgivelsen. 1.0 (1990) og 1.1 (IBM PC-utgaven) har de samme datafilene. 1.3 (1992) og 1.4 (Prince of Persia Collection-CD-en) har også de samme datafilene som hverandre. De skiller seg fra de tidligere ved nivåfargene (nivå 3 er grønt, ikke blått), to lyder og musikken. Vaktene kjemper etter tabellene i 1.0 i 1.0, og etter de senere tabellene i 1.1, 1.3 og 1.4. Kopibeskyttelsen spør fra hver utgivelses egen håndbok (én for 1.0, én for 1.1, og én for 1.3 og 1.4). PRINCE.EXE i hver utgivelse sjekkes også, fordi det er filen som skiller de to utgivelsene i et par fra hverandre.",
 		"slot.levels": "Egendefinerte nivåer",

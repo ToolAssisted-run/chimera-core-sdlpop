@@ -263,7 +263,7 @@
 		"setting.start_minutes_left": "Minuten",
 		"setting.start_minutes_left.about": "Die Minuten auf der Uhr zu Beginn. Das Originalspiel hat 60. -1 bedeutet keine Zeitbegrenzung.",
 		"setting.use_fixes_and_enhancements": "Korrekturen und Verbesserungen",
-		"setting.use_fixes_and_enhancements.about": "SDLPoPs Korrekturen der Fehler des Originalspiels und seine Spielverbesserungen. Aus ist das Originalspiel. Ein ist an: Dann gelten die Einstellungen unten, die eingeschaltet sind (alle sind standardmäßig aus).",
+		"setting.use_fixes_and_enhancements.about": "Die Korrekturen von SDLPoP an den Fehlern des Originalspiels und seine Spielverbesserungen. Aus ist das Originalspiel. Ein ist an: Dann gelten die Einstellungen unten, die eingeschaltet sind (alle sind standardmäßig aus).",
 		"setting.version": "Version",
 		"setting.version.about": "Welche Veröffentlichung von Prince of Persia gespielt wird. Das Projekt liefert die Dateien dieser Veröffentlichung. 1.0 (1990) und 1.1 (die Veröffentlichung für den IBM PC) haben dieselben Datendateien. 1.3 (1992) und 1.4 (die CD Prince of Persia Collection) haben ebenfalls untereinander dieselben Datendateien. Diese unterscheiden sich von den früheren in den Levelfarben (der Kerker von Level 3 ist grün, nicht blau), in zwei Tönen und in der Musik. Die Wächter kämpfen in 1.0 nach den Tabellen von 1.0, in 1.1, 1.3 und 1.4 nach den späteren Tabellen. Der Kopierschutz fragt aus dem Handbuch jeder Veröffentlichung (eines für 1.0, eines für 1.1, und eines für 1.3 und 1.4). Auch die PRINCE.EXE jeder Veröffentlichung wird geprüft, denn sie ist die Datei, die die beiden Veröffentlichungen eines Paares unterscheidet.",
 		"slot.levels": "Eigene Level",

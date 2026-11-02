@@ -191,7 +191,7 @@ printf '%s' "$csettings" > "$work/nativecheats/settings"
 python3 "$here/make-project.py" "$pkg" "$work/cheats.chimeraProject" "$frames" --movie "$route" \
 	--settings "$csettings" --press "50:Cheat More Time"
 gui cheatsgui "$config" "$work/cheats.chimeraProject" "$frames" "${firmware[@]}" > /dev/null
-ncols="$(python3 -c "import json; p = json.load(open('$work/cheats.chimeraProject')); print(p['input'].splitlines()[1].count('|'))")"
+ncols="$(python3 -c "import json, sys, zipfile; p = json.loads(zipfile.ZipFile(sys.argv[1]).read('project.json')); print(sum(len(g) for g in p['inputs']['columns']))" "$work/cheats.chimeraProject")"
 if [ "$(meta cheatsgui status)" = "OK" ] && [ "$ncols" = "29" ] && cmp -s "$work/cheats.gs.bin" "$work/cheatsgui/gamestate.bin" &&
    ! cmp -s "$work/native.gs.bin" "$work/cheats.gs.bin"; then
 	report "gui:cheats-project" PASS "a project with the cheats on ($ncols columns): More Time on row 50 reaches the game, Game State is the reference's"
@@ -205,7 +205,7 @@ fi
 "$rn" "$work/native" --frames "$frames" --movie "$route" --trace "$work/igt.trace" --trace-props "Time.IGT Ms,Time.IGT Ticks" > /dev/null 2>&1
 want_ms="$(awk -v s=$((frames - 1)) '$1 == s { print $4 }' "$work/igt.trace")"
 want_ticks="$(awk -v s=$((frames - 1)) '$1 == s { print $5 }' "$work/igt.trace")"
-hdr() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['headers'].get(sys.argv[2], ''))" "$work/gui.chimeraProject" "$1"; }
+hdr() { python3 -c "import json,sys,zipfile; print(json.loads(zipfile.ZipFile(sys.argv[1]).read('project.json'))['headers'].get(sys.argv[2], ''))" "$work/gui.chimeraProject" "$1"; }
 want_text="$(printf '%02d:%02d.%03d' $((want_ms / 60000)) $((want_ms / 1000 % 60)) $((want_ms % 1000)))"
 if [ "$(meta gui saved)" = "1" ] && [ -n "$want_ms" ] && [ "$want_ms" = "$(( want_ticks * 1000 / 12 ))" ] && [ "$want_ticks" -gt 0 ] &&
    [ "$(meta gui game_igt_ms)" = "$want_ms" ] && [ "$(hdr GameTimeMs)" = "$want_ms" ] && [ "$(hdr GameTime)" = "$want_text" ] &&
@@ -233,10 +233,16 @@ fi
 # game can show, which Chimera passes on as a string and only the core refuses
 # (the data files are no refusal since any file may take an original's place)
 python3 - "$work/gui.chimeraProject" "$work/noname.chimeraProject" <<'EOF'
-import json, sys
-p = json.load(open(sys.argv[1]))
+import json, sys, zipfile
+# a project is a zip (Chimera's since 2026-11-02): project.json and the input's lines
+z = zipfile.ZipFile(sys.argv[1])
+p = json.loads(z.read("project.json"))
 p["settings"]["player_name"] = "   "
-json.dump(p, open(sys.argv[2], "w"), indent="\t")
+with zipfile.ZipFile(sys.argv[2], "w", zipfile.ZIP_DEFLATED) as o:
+    o.writestr("project.json", json.dumps(p, indent="\t"))
+    for name in z.namelist():
+        if name != "project.json":
+            o.writestr(name, z.read(name))
 EOF
 code="$(gui refuse "$config" "$work/noname.chimeraProject" 10 "${firmware[@]}")"
 if [ "$code" = "64" ] && grep -q "the Player Name (Hall of Fame) setting has nothing the game can show" "$work/refuse.log"; then

@@ -210,6 +210,7 @@ def main():
         ],
         "author": "David Nagy and the SDLPoP contributors, from Jordan Mechner's Prince of Persia; chimera port by Sergio Martin",
         "url": "https://github.com/ToolAssisted-run/chimera-core-sdlpop",
+        "runsOn": ["windows-x86_64", "linux-x86_64", "macos-x86_64"],
         "deterministic": True,
         "memoryLayoutMiB": [64, 8, 8, 8, 64],
         "_memoryLayoutMiB_note": "sbrk, sealed, invisible, plain, mmap. The game itself is small; the room is for the sounds SDLPoP converts to 44100 Hz stereo when it loads them, SDL's dummy window, and the game's own 4 MiB stack (mmap, MAP_STACK).",

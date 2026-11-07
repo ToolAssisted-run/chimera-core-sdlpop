@@ -15,8 +15,17 @@ CC     := $(MBUILD)/musl-gcc
 
 # BizHawk waterbox's frozen guest flags, as miniBox's source/guest/meson.build
 # gives them to a C guest
-WBFLAGS := -fvisibility=hidden -mcmodel=large -mno-red-zone -mstack-protector-guard=global \
-	-fno-stack-protector -fno-pic -fno-pie -fcf-protection=none -DNDEBUG -DCHIMERA_GUEST
+# The guest is built for the CPU this runs on (a package is built natively,
+# never cross-built), with miniBox's own flags for that CPU (its meson.build,
+# waterbox_cpu_flags); x86_64 keeps the flags it always had.
+ARCH := $(shell uname -m)
+ifeq ($(ARCH),aarch64)
+CPUFLAGS := -mbranch-protection=none -mno-outline-atomics -ffp-contract=off -fsigned-char -ffixed-x18
+else
+CPUFLAGS := -mcmodel=large -mno-red-zone -fcf-protection=none
+endif
+WBFLAGS := -fvisibility=hidden $(CPUFLAGS) -mstack-protector-guard=global \
+	-fno-stack-protector -fno-pic -fno-pie -DNDEBUG -DCHIMERA_GUEST
 MBINCS := -I$(MB)/extern/emulibc -I$(MB)/source/guest/include -I$(MB)/extern/jsmn
 
 SDL_CFLAGS := $(WBFLAGS) $(COMMON_CFLAGS) $(SDL_WARN)
@@ -51,6 +60,9 @@ $(B)/core/%.o: %.c $(CORE_HDRS) $(PATCH_STAMP) $(INC_DIR)/SDL2/.stamp $(B)/flags
 $(B)/core.wbx: $(CORE_OBJS) $(POP_OBJS) $(SDL_OBJS)
 	$(CC) -static -no-pie -Wl,--eh-frame-hdr,-O2 -Wl,-z,stack-size=8388608 -T $(MB)/source/guest/linkscript.T \
 		-o $@.tmp $^ $(MBUILD)/source/guest/emulibc.c.o $(WRAP_FLAGS) -lgcc
+	# an aarch64 guest reads its thread pointer from the machine's slot
+	# (miniBox's MACHINE-SPEC, "aarch64"): the host refuses one not rewritten so
+	if [ $(ARCH) = aarch64 ]; then python3 $(MB)/source/guest/wbx-tp-rewrite.py $@.tmp; fi
 	sh $(MB)/source/guest/check-wbx.sh $@.tmp
 	mv $@.tmp $@
 

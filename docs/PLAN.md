@@ -204,12 +204,13 @@ Level Colours), so a movie's reader sees them and the gate reads them.
 
 ## Settings
 
-58, all things that change play, recorded in the project:
+60, all things that change play, recorded in the project:
 
 - `version` (1.0 / 1.1 / 1.3 / 1.4, **1.0**), `cheats` (off: the cheat word on
-  the DOS command line, "megahit"), `sound` (digital / pcSpeaker) and
+  the DOS command line, "megahit"), `sound` (digital / pcSpeaker),
   `random_seed` (the DOS game took it from the clock; SDLPoP's own `seed=`
-  argument);
+  argument) and `fade_frames` (1 to 64, **18**: the frames a cutscene's fade
+  takes, see "The DOS game outside the levels");
 - `enable_copyprot` (**on**: the original has the potions level after level
   1, and SDLPoP's own default is off), `first_level`, `skip_title`,
   `start_minutes_left`, `start_hitp`, `max_hitp_allowed`;
@@ -316,7 +317,74 @@ in place of the original (0 or 1 file, not held to 1.0's hash; the original
 LEVELS.DAT is then not required - `requiredWhen: {"not": {"slot": "levels"}}`).
 A whole SDLPoP mod folder is not supported.
 
+## The DOS game outside the levels (2026-11-24)
+
+Inside a level SDLPoP plays as the DOS game does, tick for tick. Outside the
+levels four things were found to differ, each measured on Prince of Persia
+1.4 running under DOSBox-X (its built-in DOS, the Sound Blaster) with an
+instruction tracer, and each is a patch. They matter to a movie that is to be
+the same run on the DOS game: they decide which random numbers a level starts
+with and which key is taken on which tick.
+
+- **The copy protection's table (0004, release 1.4 only).** SDLPoP draws it
+  in every `start_game()`: at power-on and again when a key on the title
+  starts the game. That is 1.0's program. 1.4 draws one random number at
+  power-on and the table when the game starts (seed 000CBE2A from the clock,
+  9D018C45 after start-up, unchanged through the title, then the table and
+  two draws at Enter). So a 1.4 project with the seed setting S is the DOS
+  game with the seed S plus one draw written after start-up.
+- **The frames of a fade (0005, the `fade_frames` setting).** A cutscene
+  frame draws random numbers (two torches, and a star on odd frame counts).
+  SDLPoP times a fade step, and a fade's 64 steps take 22 frames; the DOS game
+  does not, and a frame lets steps through until its own timer has run out.
+  Measured under DOSBox-X: 18 frames at 22000 (default) and 6000 cycles, 22 at
+  2300 and 1800, 25 at 1400, 33 at 1000, 51 at 700, 64 in and 65 out at 600
+  and below (one step a frame, the most). The patch paces a fade to
+  `frame * 64 / fade_frames`; with 18 and with 64 the frames and draws of the
+  cutscenes before levels 4, 8 and 9 are the DOS game's step for step (173,
+  258, 289 draws at 18; 449, 534, 565 at 64). The speeds in between are not
+  regular on DOS (a fade out takes one to four frames more than a fade in)
+  and the setting only approximates them.
+- **The keyboard buffer (0006).** Release 1.4 empties it for as long as the
+  wait at the end of `draw_level_first()` lasts (0C95:037C: INT 21h AH=0Ch in
+  a loop until the timer is 0), so a key pressed before a level's first tick
+  is lost and Restart Level cannot be had on that tick; done for 1.4 only.
+  And for every release: after a room change the buffer is emptied before the
+  dark screen and not after it. The dark screen ends a step here, and
+  emptying after it lost the next tick's key, so Restart Level on the tick
+  after a room change did nothing (it works on DOS).
+- **A level's end that waits for a sound (0007).** The game goes on ticking
+  and the torches go on drawing; SDLPoP's replay code then puts the seed back.
+  The DOS game keeps what was drawn (two draws later per tick waited).
+
+Also measured, and already the same here: the sound switch only mutes (a
+sound still counts as playing for its whole length); a cutscene skipped with
+Restart Level restarts the next level on its first tick; the draws after a
+cutscene's skip key and between levels without a cutscene.
+
+Checked on the built package with release 1.4: a whole game of thirteen
+levels played from one seed setting starts every level on the seed the DOS
+game starts it on and counts the same ticks at Jaffar's death, once with
+`fade_frames` 18 against DOSBox-X at 22000 cycles and once with 64 against
+500 cycles.
+
 ## The patches
+
+`patches/0007` (2026-11-24), under `#ifdef CHIMERA_CORE`: the seed is not put
+back after a level's end that waited for a sound.
+
+`patches/0006` (2026-11-24), under `#ifdef CHIMERA_CORE`: `clear_kbd_buf()`
+after `draw_level_first()`'s wait when `chimera_release()` is 14; in
+`redraw_screen()` of another room the buffer is emptied before the dark
+screen, and the clears after it are skipped.
+
+`patches/0005` (2026-11-24), under `#ifdef CHIMERA_CORE`: in
+`proc_cutscene_frame()` a frame of a fade ends when the fade has reached
+`frame * 64 / chimera_fade_frames()` steps, not when the frame's timer stops.
+
+`patches/0004` (2026-11-24), under `#ifdef CHIMERA_CORE`: `start_game()`
+draws the copy protection's table only when a game is about to start, when
+`chimera_release()` is 14.
 
 `patches/0003` (2026-09-29), under `#ifdef CHIMERA_CORE`: the hall of fame's
 name is `chimera_hof_name()`, entered as `input_str` would have taken it.
@@ -471,6 +539,24 @@ tile animations), so step 0 is its row 1.
 
 ## Open
 
+- **The gate's expected values were recorded before patches 0004 to 0007 and
+  have not been re-recorded.** The change was made where only release 1.4's
+  files were at hand, so no leg that runs the game could be run (they need
+  1.0's files). With the files, expect `picture:cutscene` and
+  `picture:level2` to report other pixels than the ones written in
+  `run-gate.sh`: their torches and stars are drawn from other random numbers
+  now (a fade takes 18 cutscene frames by default, not 22, and level 1's end
+  keeps what its closing music drew). The legs that read a step number
+  (`route:level-2`, `time:igt`) should hold - a fade lasts as many steps as
+  before, only fewer of the cutscene's frames fall into it - but were not
+  run either. Re-record what changed, and give the new behaviour legs of its
+  own, each with its negative control: the
+  table at power-on in 1.4 and in 1.0, the frames of a fade at 18 and at 64, a
+  key before a level's first tick in 1.4 and in 1.0, Restart Level on the
+  tick after a room change, the seed after a level's end that waits for a
+  sound.
+- **1.0, 1.1 and 1.3 were not measured on DOS.** What patches 0004 and 0006
+  do for 1.4 only may hold for 1.3 (and 1.1) as well.
 - **The engine reads the step rate once** (above).
 - **Winning the game asks for a name** in the Hall of Fame, and the panel has
   no letter keys: the name entry cannot be finished, so a won game stays on

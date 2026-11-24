@@ -161,6 +161,8 @@
 		"setting.enable_remember_guard_hp.about": "Lính gác giữ số máu mà anh ta có khi hoàng tử quay lại phòng của anh ta.",
 		"setting.enable_super_high_jump": "Nhảy siêu cao",
 		"setting.enable_super_high_jump.about": "Trong lúc rơi nhẹ (sau bình xanh), hoàng tử có thể nhảy lên hai tầng.",
+		"setting.fade_frames": "Độ dài chuyển cảnh mờ của đoạn cắt cảnh",
+		"setting.fade_frames.about": "Một lần mờ dần vào hoặc ra kéo dài bao nhiêu khung hình của đoạn cắt cảnh. Game DOS không tính giờ cho các lần mờ dần: chúng kéo dài tùy theo máy cần bao lâu, và mỗi khung hình của đoạn cắt cảnh đều rút số ngẫu nhiên. 18 là DOSBox-X ở tốc độ mặc định, 64 là một máy chậm (600 chu kỳ trở xuống). Một bản ghi hình lưu lại số mà nó đã chạy.",
 		"setting.first_level": "Màn đầu tiên",
 		"setting.first_level.about": "Màn mà một ván mới bắt đầu. Game gốc bắt đầu ở màn 1.",
 		"setting.fix_bigpillar_climb": "Sửa: leo cột lớn",

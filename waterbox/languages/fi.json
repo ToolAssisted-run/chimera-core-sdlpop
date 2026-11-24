@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Vartija pitää elinpisteet, joita hänellä oli, kun prinssi palaa hänen huoneeseensa.",
 		"setting.enable_super_high_jump": "Superkorkea hyppy",
 		"setting.enable_super_high_jump.about": "Höyhenputoamisen aikana (vihreän juoman jälkeen) prinssi voi hypätä kaksi kerrosta ylös.",
+		"setting.fade_frames": "Välianimaatioiden häivytyksen pituus",
+		"setting.fade_frames.about": "Kuinka monta välianimaation kuvaa häivytys sisään tai ulos kestää. DOS-peli ei ajasta häivytyksiään: ne kestävät niin kauan kuin kone tarvitsee, ja jokainen välianimaation kuva arpoo satunnaislukuja. 18 on DOSBox-X oletusnopeudella, 64 hidas kone (600 sykliä tai vähemmän). Tallenne tallentaa luvun, jolla se ajettiin.",
 		"setting.first_level": "Ensimmäinen taso",
 		"setting.first_level.about": "Taso, jolta uusi peli alkaa. Alkuperäinen peli alkaa tasosta 1.",
 		"setting.fix_bigpillar_climb": "Korjaus: suuren pylvään kiipeäminen",

@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Una guardia mantiene i punti vita che aveva quando il principe torna nella sua stanza.",
 		"setting.enable_super_high_jump": "Super salto alto",
 		"setting.enable_super_high_jump.about": "Durante la caduta della piuma (dopo la pozione verde) il principe può saltare due piani in alto.",
+		"setting.fade_frames": "Durata delle dissolvenze delle scene",
+		"setting.fade_frames.about": "Quanti fotogrammi di una scena dura una dissolvenza in apertura o in chiusura. Il gioco DOS non cronometra le sue dissolvenze: durano quanto serve alla macchina, e ogni fotogramma di una scena estrae numeri casuali. 18 è DOSBox-X alla velocità predefinita, 64 una macchina lenta (600 cicli o meno). Un filmato registra il numero con cui è stato eseguito.",
 		"setting.first_level": "Primo livello",
 		"setting.first_level.about": "Il livello su cui inizia una nuova partita. Il gioco originale inizia dal livello 1.",
 		"setting.fix_bigpillar_climb": "Correzione: salita del grande pilastro",

@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Um guarda mantém os pontos de vida que tinha quando o príncipe volta para a sala dele.",
 		"setting.enable_super_high_jump": "Super salto alto",
 		"setting.enable_super_high_jump.about": "Durante a queda suave (depois da poção verde) o príncipe pode pular dois andares para cima.",
+		"setting.fade_frames": "Duração dos fades das cenas",
+		"setting.fade_frames.about": "Quantos quadros de uma cena dura um fade de entrada ou de saída. O jogo de DOS não cronometra seus fades: eles duram o que a máquina precisa, e cada quadro de uma cena sorteia números aleatórios. 18 é o DOSBox-X na velocidade padrão, 64 uma máquina lenta (600 ciclos ou menos). Um filme grava o número com que foi executado.",
 		"setting.first_level": "Primeira fase",
 		"setting.first_level.about": "A fase em que um jogo novo começa. O jogo original começa na 1.",
 		"setting.fix_bigpillar_climb": "Correção: subir o pilar grande",

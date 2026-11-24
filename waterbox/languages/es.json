@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Un guardia conserva los puntos de vida que tenía cuando el príncipe vuelve a su habitación.",
 		"setting.enable_super_high_jump": "Salto superalto",
 		"setting.enable_super_high_jump.about": "Durante la caída de pluma (tras la poción verde) el príncipe puede saltar dos pisos hacia arriba.",
+		"setting.fade_frames": "Duración de los fundidos de las escenas",
+		"setting.fade_frames.about": "Cuántos fotogramas de una escena dura un fundido de entrada o de salida. El juego de DOS no cronometra sus fundidos: duran lo que la máquina necesita, y cada fotograma de una escena saca números aleatorios. 18 es DOSBox-X a su velocidad por defecto, 64 una máquina lenta (600 ciclos o menos). Una película registra el número con el que se ejecutó.",
 		"setting.first_level": "Primer nivel",
 		"setting.first_level.about": "El nivel en el que empieza una partida nueva. El juego original empieza en el 1.",
 		"setting.fix_bigpillar_climb": "Arreglo: trepada a la columna grande",

@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "En vagt beholder de livspoint, han havde, da prinsen kommer tilbage til sit rum.",
 		"setting.enable_super_high_jump": "Super højt spring",
 		"setting.enable_super_high_jump.about": "Under fjerfald (efter den grønne drik) kan prinsen springe to etager op.",
+		"setting.fade_frames": "Længde på mellemscenernes overtoninger",
+		"setting.fade_frames.about": "Hvor mange af en mellemscenes billeder en ind- eller udtoning varer. DOS-spillet tager ikke tid på sine overtoninger: de varer så længe, maskinen har brug for, og hvert billede i en mellemscene trækker tilfældige tal. 18 er DOSBox-X ved standardhastighed, 64 en langsom maskine (600 cyklusser eller færre). En optagelse gemmer det tal, den kørte med.",
 		"setting.first_level": "Første niveau",
 		"setting.first_level.about": "Det niveau, et nyt spil starter på. Det originale spil starter på 1.",
 		"setting.fix_bigpillar_climb": "Rettelse: klatring op ad en stor søjle",

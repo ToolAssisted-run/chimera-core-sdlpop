@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "En vakt behåller de livspoäng han hade när prinsen kommer tillbaka in i hans rum.",
 		"setting.enable_super_high_jump": "Superhögt hopp",
 		"setting.enable_super_high_jump.about": "Under fjäderfall (efter den gröna drycken) kan prinsen hoppa två våningar upp.",
+		"setting.fade_frames": "Längd på mellansekvensernas toningar",
+		"setting.fade_frames.about": "Hur många av en mellansekvens bilder en in- eller uttoning varar. DOS-spelet tar inte tid på sina toningar: de varar så länge maskinen behöver, och varje bild i en mellansekvens drar slumptal. 18 är DOSBox-X med standardhastighet, 64 en långsam maskin (600 cykler eller färre). En film sparar talet som den kördes med.",
 		"setting.first_level": "Första nivå",
 		"setting.first_level.about": "Nivån som en ny omgång startar på. Originalspelet startar på 1.",
 		"setting.fix_bigpillar_climb": "Rättelse: klättring vid stor pelare",

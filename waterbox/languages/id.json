@@ -161,6 +161,8 @@
 		"setting.enable_remember_guard_hp.about": "Penjaga menyimpan poin hidup yang ia miliki saat pangeran kembali ke ruangannya.",
 		"setting.enable_super_high_jump": "Lompatan sangat tinggi",
 		"setting.enable_super_high_jump.about": "Selama jatuh melayang (setelah ramuan hijau), pangeran bisa melompat naik dua lantai.",
+		"setting.fade_frames": "Panjang fade adegan sela",
+		"setting.fade_frames.about": "Berapa frame adegan sela yang dipakai sebuah fade masuk atau keluar. Game DOS tidak mengatur waktu fade-nya: lamanya tergantung kebutuhan mesin, dan setiap frame adegan sela mengambil bilangan acak. 18 adalah DOSBox-X pada kecepatan bawaannya, 64 mesin yang lambat (600 siklus atau kurang). Rekaman mencatat angka yang dipakai saat dijalankan.",
 		"setting.first_level": "Level pertama",
 		"setting.first_level.about": "Level tempat permainan baru dimulai. Game asli dimulai di level 1.",
 		"setting.fix_bigpillar_climb": "Perbaikan: memanjat tiang besar",

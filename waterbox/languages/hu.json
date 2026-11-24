@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Az őr megtartja azt az életerőt, amennyi volt, amikor a herceg visszatér a szobájába.",
 		"setting.enable_super_high_jump": "Szuperugrás",
 		"setting.enable_super_high_jump.about": "A tollas esés alatt (a zöld főzet után) a herceg két emelettel feljebb tud ugrani.",
+		"setting.fade_frames": "Átvezető jelenetek áttűnésének hossza",
+		"setting.fade_frames.about": "Egy átvezető jelenet hány képkockájáig tart egy be- vagy kiúsztatás. A DOS-os játék nem időzíti az áttűnéseit: addig tartanak, ameddig a gépnek kell, és egy átvezető jelenet minden képkockája véletlenszámokat húz. A 18 a DOSBox-X alapértelmezett sebességen, a 64 egy lassú gép (600 ciklus vagy kevesebb). Egy felvétel rögzíti, amelyikkel futott.",
 		"setting.first_level": "Első pálya",
 		"setting.first_level.about": "Az a pálya, ahol új játék indul. Az eredeti játék az 1. pályán indul.",
 		"setting.fix_bigpillar_climb": "Javítás: mászás a nagy oszlophoz",

@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Prens odasına geri döndüğünde bir muhafız, daha önce sahip olduğu can puanını korur.",
 		"setting.enable_super_high_jump": "Süper yüksek zıplama",
 		"setting.enable_super_high_jump.about": "Tüy düşüşü sırasında (yeşil iksirden sonra) prens iki kat yukarı zıplayabilir.",
+		"setting.fade_frames": "Ara sahne geçiş uzunluğu",
+		"setting.fade_frames.about": "Bir açılma ya da kararmanın ara sahnenin kaç karesi boyunca sürdüğü. DOS oyunu geçişlerini zamanlamaz: makinenin ihtiyaç duyduğu kadar sürerler ve ara sahnenin her karesi rastgele sayılar çeker. 18, varsayılan hızındaki DOSBox-X'tir; 64 ise yavaş bir makinedir (600 döngü veya daha az). Bir film, çalıştığı sayıyı kaydeder.",
 		"setting.first_level": "İlk bölüm",
 		"setting.first_level.about": "Yeni bir oyunun başladığı bölüm. Orijinal oyun 1. bölümle başlar.",
 		"setting.fix_bigpillar_climb": "Düzeltme: büyük sütuna tırmanma",

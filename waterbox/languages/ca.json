@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Un guarda manté els punts de vida que tenia quan el príncep torna a la seva sala.",
 		"setting.enable_super_high_jump": "Salt súper alt",
 		"setting.enable_super_high_jump.about": "Durant la caiguda amb ploma (després de la poció verda) el príncep pot saltar dos plantes amunt.",
+		"setting.fade_frames": "Durada de les foses de les escenes",
+		"setting.fade_frames.about": "Quants fotogrames d'una escena dura una fosa d'entrada o de sortida. El joc de DOS no cronometra les foses: duren el que la màquina necessita, i cada fotograma d'una escena treu nombres aleatoris. 18 és DOSBox-X a la velocitat per defecte, 64 una màquina lenta (600 cicles o menys). Una gravació guarda el número amb què s'ha executat.",
 		"setting.first_level": "Primer nivell",
 		"setting.first_level.about": "El nivell on comença una partida nova. El joc original comença al 1.",
 		"setting.fix_bigpillar_climb": "Correcció: pujar per la columna gran",

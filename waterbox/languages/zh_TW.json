@@ -161,6 +161,8 @@
 		"setting.enable_remember_guard_hp.about": "王子回到房間時，守衛保留他先前的生命值。",
 		"setting.enable_super_high_jump": "超高跳",
 		"setting.enable_super_high_jump.about": "在羽毛墜落期間（喝下綠色藥水之後），王子可以向上跳兩層樓。",
+		"setting.fade_frames": "過場動畫淡入淡出長度",
+		"setting.fade_frames.about": "一次淡入或淡出占過場動畫的多少幀。DOS 版遊戲不為淡入淡出計時：機器需要多久就持續多久，而過場動畫的每一幀都會抽取亂數。18 是預設速度下的 DOSBox-X，64 是慢速機器（600 週期或更低）。錄像會記錄它執行時使用的數字。",
 		"setting.first_level": "起始關卡",
 		"setting.first_level.about": "新遊戲開始的關卡。原版遊戲從第 1 關開始。",
 		"setting.fix_bigpillar_climb": "修正：爬上大柱子",

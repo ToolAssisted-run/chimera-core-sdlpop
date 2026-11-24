@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Un garde garde les points de vie qu'il avait quand le prince revient dans sa salle.",
 		"setting.enable_super_high_jump": "Super saut en hauteur",
 		"setting.enable_super_high_jump.about": "Pendant la chute plume (après la potion verte), le prince peut sauter deux étages plus haut.",
+		"setting.fade_frames": "Durée des fondus des cinématiques",
+		"setting.fade_frames.about": "Combien d'images d'une cinématique dure un fondu d'ouverture ou de fermeture. Le jeu DOS ne chronomètre pas ses fondus : ils durent le temps qu'il faut à la machine, et chaque image d'une cinématique tire des nombres aléatoires. 18 correspond à DOSBox-X à sa vitesse par défaut, 64 à une machine lente (600 cycles ou moins). Un film enregistre le nombre avec lequel il a tourné.",
 		"setting.first_level": "Premier niveau",
 		"setting.first_level.about": "Le niveau où démarre une nouvelle partie. Le jeu d'origine démarre au niveau 1.",
 		"setting.fix_bigpillar_climb": "Correctif : escalade d'un grand pilier",

@@ -163,6 +163,8 @@
 		"setting.enable_remember_guard_hp.about": "Strażnik zachowuje punkty życia, jakie miał, gdy książę wraca do jego pomieszczenia.",
 		"setting.enable_super_high_jump": "Super wysoki skok",
 		"setting.enable_super_high_jump.about": "Podczas opadania z piórkiem (po zielonym eliksirze) książę może skoczyć o dwa piętra w górę.",
+		"setting.fade_frames": "Długość przejść w przerywnikach",
+		"setting.fade_frames.about": "Ile klatek przerywnika trwa rozjaśnienie lub ściemnienie. Gra DOS nie odmierza czasu swoich przejść: trwają tyle, ile potrzebuje maszyna, a każda klatka przerywnika losuje liczby. 18 to DOSBox-X z domyślną prędkością, 64 to wolna maszyna (600 cykli lub mniej). Nagranie zapisuje liczbę, z którą zostało wykonane.",
 		"setting.first_level": "Pierwszy poziom",
 		"setting.first_level.about": "Poziom, na którym zaczyna się nowa gra. Oryginalna gra zaczyna się od 1.",
 		"setting.fix_bigpillar_climb": "Poprawka: wspinaczka przy dużym filarze",

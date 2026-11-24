@@ -308,6 +308,20 @@ def main():
                     "generator. The DOS game took it from the clock. A movie"
                     " records the number it ran with."),
             },
+            {
+                "name": "fade_frames",
+                "display": text("setting.fade_frames", "Cutscene fade length"),
+                "type": "int",
+                "default": 18,
+                "min": 1,
+                "max": 64,
+                "description": text("setting.fade_frames.about", "How many of a cutscene's frames a fade in or out "
+                    "takes. The DOS game does not time its fades: they take "
+                    "as long as the machine needs, and every frame of a "
+                    "cutscene draws random numbers. 18 is DOSBox-X at its "
+                    "default speed, 64 a slow machine (600 cycles or less). "
+                    "A movie records the number it ran with."),
+            },
         ] + ini_settings(),
         "firmware": firmware,
     }

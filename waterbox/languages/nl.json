@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Een bewaker houdt de trefpunten die hij had, wanneer de prins terugkomt in zijn kamer.",
 		"setting.enable_super_high_jump": "Superhoge sprong",
 		"setting.enable_super_high_jump.about": "Tijdens veervallen (na het groene drankje) kan de prins twee verdiepingen omhoog springen.",
+		"setting.fade_frames": "Lengte van de overvloeiingen in tussenscènes",
+		"setting.fade_frames.about": "Hoeveel beelden van een tussenscène een in- of uitfade duurt. Het DOS-spel meet de tijd van zijn overvloeiingen niet: ze duren zo lang als de machine nodig heeft, en elk beeld van een tussenscène trekt willekeurige getallen. 18 is DOSBox-X op de standaardsnelheid, 64 een trage machine (600 cycli of minder). Een opname bewaart het getal waarmee hij is gespeeld.",
 		"setting.first_level": "Eerste level",
 		"setting.first_level.about": "Het level waarop een nieuw spel begint. Het origineel begint bij 1.",
 		"setting.fix_bigpillar_climb": "Oplossing: klimmen langs een grote pilaar",

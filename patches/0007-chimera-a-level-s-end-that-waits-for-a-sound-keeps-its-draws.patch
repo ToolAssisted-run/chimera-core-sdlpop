@@ -1,0 +1,31 @@
+Subject: chimera: a level's end that waits for a sound keeps its draws
+
+A level does not end while a sound plays: the game goes on ticking, the
+timer runs and the torches go on drawing random numbers. SDLPoP
+(USE_REPLAY) then puts the seed back to its value on the level's last
+tick, so that such a wait shifts nothing. The DOS game keeps what was
+drawn. Measured there: the published level 7 line with the sound on
+enters level 8 two draws later per tick waited, and level 7 ended with a
+closing gate still creaking draws its two torches once more before the
+cutscene begins.
+
+Under CHIMERA_CORE the seed is kept.
+
+(Not changed, because the DOS game does the same: with the sound switched
+off its sounds still play, silently, for their whole length, and count as
+playing - Prince of Persia 1.4, check_sound_playing at 1497:6524 ORs the
+"playing" words of its three sound kinds whatever the switch says.)
+
+--- a/src/seg003.c
++++ b/src/seg003.c
+@@ -423,7 +423,10 @@
+ 
+ 				#ifdef USE_REPLAY
+ 				if (keep_last_seed == -1) {
++#ifndef CHIMERA_CORE
++					// (the DOS game keeps what the wait for a sound drew)
+ 					random_seed = preserved_seed; // Ensure reproducibility in the next level.
++#endif
+ 					keep_last_seed = 0;
+ 				}
+ 				#endif

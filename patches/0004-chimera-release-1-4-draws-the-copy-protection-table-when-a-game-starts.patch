@@ -1,0 +1,38 @@
+Subject: chimera: release 1.4 draws the copy protection table when a game starts
+
+SDLPoP draws the copy protection table in every start_game(), so once at
+power-on (before the title) and again when a key on the title starts the
+game. That is release 1.0's program, which SDLPoP is. Prince of Persia 1.4
+on DOS draws it once, when the game starts: at power-on it has drawn one
+random number (init_game_main) and nothing else until a key is pressed.
+Measured on the DOS game under DOSBox-X: seed 000CBE2A from the clock,
+9D018C45 after start-up, unchanged through the title, then the table and
+two more draws when Enter is pressed.
+
+Under CHIMERA_CORE, when the release played is 1.4 (chimera_release()), the
+table is drawn only when a game is about to start. The other releases were
+not measured and keep SDLPoP's behaviour.
+
+--- a/src/seg000.c
++++ b/src/seg000.c
+@@ -209,6 +209,10 @@
+ 	release_title_images(); // added
+ 	free_optsnd_chtab(); // added
+ #ifdef USE_COPYPROT
++#ifdef CHIMERA_CORE
++	// Release 1.4 draws the table when a game starts, not when the title comes up.
++	if (chimera_release() != 14 || start_level >= 0 || custom->skip_title) {
++#endif
+ 	copyprot_plac = prandom(13);
+ 	memset(&entry_used, 0, sizeof(entry_used));
+ 	memset(&letts_used, 0, sizeof(letts_used));
+@@ -224,6 +228,9 @@
+ 		entry_used[which_entry] = 1;
+ 		letts_used[copyprot_letter[which_entry]-'A'] = 1;
+ 	}
++#ifdef CHIMERA_CORE
++	}
++#endif
+ #endif
+ 	if (custom->skip_title) { // CusPop option: skip the title sequence (level loads instantly)
+ 		int level_number = (start_level >= 0) ? start_level : custom->first_level;

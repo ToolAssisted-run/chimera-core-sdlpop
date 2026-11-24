@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "Ein Wächter behält die Trefferpunkte, die er hatte, wenn der Prinz in seinen Raum zurückkommt.",
 		"setting.enable_super_high_jump": "Superhoher Sprung",
 		"setting.enable_super_high_jump.about": "Während des Federfalls (nach dem grünen Trank) kann der Prinz zwei Etagen hoch springen.",
+		"setting.fade_frames": "Länge der Überblendungen in Zwischensequenzen",
+		"setting.fade_frames.about": "Wie viele Bilder einer Zwischensequenz eine Ein- oder Ausblendung dauert. Das DOS-Spiel misst seine Überblendungen nicht: Sie dauern so lange, wie der Rechner braucht, und jedes Bild einer Zwischensequenz zieht Zufallszahlen. 18 ist DOSBox-X mit Standardgeschwindigkeit, 64 ein langsamer Rechner (600 Zyklen oder weniger). Ein Film speichert die Zahl, mit der er lief.",
 		"setting.first_level": "Erstes Level",
 		"setting.first_level.about": "Das Level, mit dem ein neues Spiel beginnt. Das Originalspiel beginnt mit 1.",
 		"setting.fix_bigpillar_climb": "Korrektur: Klettern an einer großen Säule",

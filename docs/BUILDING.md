@@ -97,7 +97,7 @@ is already there.
 
 ### Patches
 
-`patches/` holds three numbered patches for `extern/SDLPoP`.
+`patches/` holds seven numbered patches for `extern/SDLPoP`.
 `waterbox/apply-patches.sh` applies them. Both makefiles run it before any
 SDLPoP file is compiled (`waterbox/sources.mk`, the `build/patches.stamp`
 rule), so there is no separate step. It can also be run by hand:
@@ -112,7 +112,7 @@ The script judges the series as a whole:
   the submodule's HEAD has them. If that fails it stops and names the patch.
 - A pristine tree gets every patch applied (`applied: <patch>`).
 - A tree that is exactly what the series leaves behind is left alone
-  (`already applied: all 3 patches`).
+  (`already applied: all 7 patches`).
 - Anything in between is an error that names the files.
 
 After a build `git status` shows `extern/SDLPoP` as modified. That is the

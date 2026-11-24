@@ -1,0 +1,103 @@
+Subject: chimera: the keyboard buffer is emptied when the DOS game empties it
+
+Two places where a command key (Restart Level, Pause, Sound On/Off ...)
+was taken or lost at another moment than on DOS.
+
+A level's first tick, in release 1.4. Its draw_level_first() ends with
+    start_timer(timer_1, 5); do { clear_kbd_buf(); } while (wait_time[1]);
+(0C95:037C: the timer is set, then INT 21h AH=0Ch empties the buffer again
+and again until the timer has run out), and the first tick's key read
+follows at once: a key pressed before a level's first tick is never seen,
+and Restart Level cannot be had on that tick. SDLPoP (release 1.0's
+program) waits without emptying, so there the key pressed during that wait
+is read on the first tick, and a restart costs nothing: a way of moving
+the random stream that 1.4 on DOS does not have. Done when the release
+played is 1.4 (chimera_release()); the other releases were not measured
+and keep SDLPoP's wait. (A cutscene skipped WITH Restart Level does restart
+the level on its first tick, on DOS too: the request is set by the
+cutscene's own key read and nothing clears it. That still works.)
+
+The tick after a room change. redraw_screen() empties the buffer while it
+redraws, which on DOS is inside the tick that changed rooms; a key pressed
+after that is read on the next tick. Here the dark screen of a room change
+(SDL_Delay(100)) ends the step, the redraw goes on with the next step's
+keys already in, and emptying the buffer then lost that tick's key: Restart
+Level on the tick after a room change did nothing (level 3's restart needed
+one more row than on DOS). After a room change the buffer is now emptied
+before the dark screen and not after it. This is the core's own step
+boundary, so it is done for every release.
+
+--- a/src/seg003.c
++++ b/src/seg003.c
+@@ -239,16 +239,38 @@
+ 	// Busy waiting!
+ 	start_timer(timer_1, 5);
+ 	do_simple_wait(1);
++#ifdef CHIMERA_CORE
++	// Release 1.4 empties the keyboard buffer for as long as this wait lasts.
++	if (chimera_release() == 14) clear_kbd_buf();
++#endif
+ }
+ 
++#ifdef CHIMERA_CORE
++// redraw_screen() of another room empties the keyboard buffer before its dark screen, not after (see there).
++static int chimera_kbd_emptied;
++#define clear_kbd_buf_redrawing() do { if (!chimera_kbd_emptied) clear_kbd_buf(); } while (0)
++#else
++#define clear_kbd_buf_redrawing() clear_kbd_buf()
++#endif
++
+ // seg003:037B
+ void redraw_screen(int drawing_different_room) {
+ 	//remove_flash();
++#ifdef CHIMERA_CORE
++	chimera_kbd_emptied = 0;
++#endif
+ 	if (drawing_different_room) {
+ 		draw_rect(&rect_top, color_0_black);
+ #ifdef USE_DARK_TRANSITION
+ 		// Briefly show a dark screen when changing rooms, like in the original game.
+ 		update_screen();
++#ifdef CHIMERA_CORE
++		// The dark screen ends the step: what is in the buffer now is what the DOS game would empty.
++		if (!is_blind_mode && is_keyboard_mode) {
++			clear_kbd_buf();
++			chimera_kbd_emptied = 1;
++		}
++#endif
+ 		SDL_Delay(100);
+ #endif
+ 	}
+@@ -267,12 +289,12 @@
+ 	redraw_lighting();
+ #endif
+ 		if (is_keyboard_mode) {
+-			clear_kbd_buf();
++			clear_kbd_buf_redrawing();
+ 		}
+ 		is_blind_mode = 1;
+ 		draw_tables();
+ 		if (is_keyboard_mode) {
+-			clear_kbd_buf();
++			clear_kbd_buf_redrawing();
+ 		}
+ #ifdef USE_COPYPROT
+ 		if (current_level == 15) {
+@@ -292,7 +314,7 @@
+ 		draw_moving();
+ 		draw_tables();
+ 		if (is_keyboard_mode) {
+-			clear_kbd_buf();
++			clear_kbd_buf_redrawing();
+ 		}
+ 		need_drects = 1;
+ 		if (curr_guard_color) {
+@@ -306,7 +328,7 @@
+ 			flip_screen(offscreen_surface);
+ 		}
+ 		if (is_keyboard_mode) {
+-			clear_kbd_buf();
++			clear_kbd_buf_redrawing();
+ 		}
+ 	}
+ 	exit_room_timer = 2;

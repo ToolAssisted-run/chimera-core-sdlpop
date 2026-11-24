@@ -163,6 +163,8 @@
 		"setting.enable_remember_guard_hp.about": "Un gardian își păstrează punctele de viață pe care le avea când prințul revine în camera lui.",
 		"setting.enable_super_high_jump": "Salt super înalt",
 		"setting.enable_super_high_jump.about": "În timpul căderii cu pană (după poțiunea verde), prințul poate sări două etaje în sus.",
+		"setting.fade_frames": "Durata tranzițiilor din scenele intermediare",
+		"setting.fade_frames.about": "Câte cadre ale unei scene intermediare durează o apariție sau o dispariție treptată. Jocul DOS nu își cronometrează tranzițiile: durează cât are nevoie mașina, iar fiecare cadru al unei scene intermediare extrage numere aleatorii. 18 este DOSBox-X la viteza implicită, 64 o mașină lentă (600 de cicluri sau mai puțin). O înregistrare reține numărul cu care a rulat.",
 		"setting.first_level": "Primul nivel",
 		"setting.first_level.about": "Nivelul la care începe un joc nou. Jocul original începe de la 1.",
 		"setting.fix_bigpillar_climb": "Remediere: cățărarea pe stâlpul mare",

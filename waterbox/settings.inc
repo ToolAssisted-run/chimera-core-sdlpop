@@ -15,8 +15,9 @@
  * switch, so turning the master switch on changes nothing until a fix is
  * chosen too.
  *
- * Four settings are not ini options and live in the driver: version (the
- * release), cheats, sound (the sound card) and random_seed.
+ * These settings are not ini options and live in the driver: version (the
+ * release), cheats, player_name, sound (the sound card), random_seed and
+ * fade_frames (the frames a cutscene's fade takes).
  */
 POP_SETTING(enable_copyprot, BOOL, "General", 1, 0, 0, "Copy protection",
 	"The original game's copy protection. After level 1 comes the potions level, where the prince must drink the potion whose letter the manual gives. It is on in 1.0. SDLPoP turns it off by default.")

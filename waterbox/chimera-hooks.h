@@ -1,4 +1,4 @@
-/* chimera-hooks.h - the seams patches 0001 to 0003 put into SDLPoP.
+/* chimera-hooks.h - the seams the patches put into SDLPoP.
  *
  * SDLPoP's common.h includes this when CHIMERA_CORE is defined; nothing else
  * of upstream sees it. Each call is one line at a place where the DOS game
@@ -27,6 +27,17 @@
  *   chimera_hof_name()         the name a won game enters in the hall of fame
  *                              (the player_name setting): there are no letter
  *                              keys to type it with.
+ *
+ * And patches 0004 to 0006's, which make the game outside its levels play as
+ * the DOS game was measured to (docs/PLAN.md, "The DOS game outside the
+ * levels"):
+ *
+ *   chimera_release()          the release being played, 10, 11, 13 or 14:
+ *                              what was measured on 1.4 only is done for 1.4
+ *                              only.
+ *   chimera_fade_frames()      how many of a cutscene's frames a fade takes
+ *                              (the fade_frames setting): the DOS game does
+ *                              not time a fade, the machine's speed does.
  */
 #ifndef CHIMERA_HOOKS_H
 #define CHIMERA_HOOKS_H
@@ -37,5 +48,7 @@ void chimera_idle_step(void);
 int chimera_copyprot_page_first(void);
 const char *chimera_version_text(void);
 const char *chimera_hof_name(void);
+int chimera_release(void);
+int chimera_fade_frames(void);
 
 #endif

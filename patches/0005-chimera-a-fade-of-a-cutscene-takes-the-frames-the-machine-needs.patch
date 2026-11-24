@@ -1,0 +1,92 @@
+Subject: chimera: a fade of a cutscene takes the frames the machine needs
+
+A cutscene frame draws random numbers (two torches, and a star on odd
+frame counts), so how many frames a fade takes decides where the random
+stream stands when the next level starts. SDLPoP times a fade step at 2
+timer ticks, three to a 6-tick cutscene frame: the 64 steps of a fade take
+22 frames. The DOS game does not time them: a step lasts as long as it
+takes and a cutscene frame lets steps through until its own timer has run
+out. So the number is the machine's. Measured on Prince of Persia 1.4 under
+DOSBox-X (the cutscene before level 4, and at the default speed those
+before levels 2, 6, 8, 9 and 12 too):
+
+    CPU cycles   22000 (default), 6000   2300, 1800   1400   1000   700   600 and less
+    frames       18                      22           25     33     51    64 in, 65 out
+
+At 600 cycles and below a frame gets through one step only, the most a
+fade can take.
+
+Under CHIMERA_CORE a cutscene frame of a fade lets through the steps that
+bring the fade to frame * 64 / chimera_fade_frames(), whatever the timer
+says. The core answers with its fade_frames setting (18 by default). With
+18 and with 64 the frames and the draws of a cutscene are the DOS game's,
+step for step; the speeds in between are not regular on DOS (a fade out
+takes one to four frames more than a fade in) and are only approximated.
+
+--- a/src/seg001.c
++++ b/src/seg001.c
+@@ -61,12 +61,22 @@
+ {154,   72,  166,  248},
+ };
+ 
++#ifdef CHIMERA_CORE
++// A fade as the DOS game paces it: its 64 steps are not timed, they take as many cutscene frames as the machine
++// needs. The core says how many (chimera_fade_frames(), its fade_frames setting).
++static int chimera_fade_frame; // cutscene frames of the fade in progress, this one included
++static int chimera_fade_step;  // its steps so far
++#endif
++
+ // seg001:0004
+ int proc_cutscene_frame(int wait_frames) {
+ 	cutscene_wait_frames = wait_frames;
+ 	reset_timer(timer_0);
+ 	do {
+ 		set_timer_length(timer_0, cutscene_frame_time);
++#ifdef CHIMERA_CORE
++		if (is_global_fading) ++chimera_fade_frame;
++#endif
+ 		play_both_seq();
+ 		draw_proom_drects(); // changed order of drects and flash
+ 		if (flash_time) {
+@@ -98,6 +108,9 @@
+ 					is_global_fading = 0;
+ 					return 2;
+ 				}
++#ifdef CHIMERA_CORE
++				++chimera_fade_step;
++#endif
+ 			} else {
+ 				idle();
+ 				delay_ticks(1);
+@@ -105,7 +118,11 @@
+ #else
+ 			idle();
+ #endif
++#ifdef CHIMERA_CORE
++		} while (is_global_fading ? chimera_fade_step < chimera_fade_frame * 64 / chimera_fade_frames() : !has_timer_stopped(timer_0));
++#else
+ 		} while(!has_timer_stopped(timer_0)); // busy waiting?
++#endif
+ 		--cutscene_wait_frames;
+ 	} while(cutscene_wait_frames);
+ 	return 0;
+@@ -841,6 +858,9 @@
+ 	if (graphics_mode == gmMcgaVga) {
+ 		fade_palette_buffer = make_pal_buffer_fadein(offscreen_surface, 0x6689, /*0*/ 2);
+ 		is_global_fading = 1;
++#ifdef CHIMERA_CORE
++		chimera_fade_frame = chimera_fade_step = 0;
++#endif
+ 		do {
+ 			interrupted = proc_cutscene_frame(1);
+ 			if (interrupted == 1) {
+@@ -868,6 +888,9 @@
+ 	if (graphics_mode == gmMcgaVga) {
+ 		fade_palette_buffer = make_pal_buffer_fadeout(0x6689, /*0*/ 2);
+ 		is_global_fading = 1;
++#ifdef CHIMERA_CORE
++		chimera_fade_frame = chimera_fade_step = 0;
++#endif
+ 		do {
+ 			interrupted = proc_cutscene_frame(1);
+ 			if (interrupted == 1) {

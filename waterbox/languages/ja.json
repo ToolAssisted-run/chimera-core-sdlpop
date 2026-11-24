@@ -161,6 +161,8 @@
 		"setting.enable_remember_guard_hp.about": "王子が部屋に戻ったとき、ガードは以前の体力のままです。",
 		"setting.enable_super_high_jump": "超高跳び",
 		"setting.enable_super_high_jump.about": "羽落下の間(緑の薬の後)、王子は2階上まで跳べます。",
+		"setting.fade_frames": "カットシーンのフェードの長さ",
+		"setting.fade_frames.about": "フェードイン・フェードアウトがカットシーンの何フレーム分かかるか。DOS版はフェードの時間を計りません。マシンが必要とするだけかかり、カットシーンの各フレームで乱数を引きます。18は既定の速度のDOSBox-X、64は遅いマシン(600サイクル以下)です。ムービーは実行時の数値を記録します。",
 		"setting.first_level": "最初のレベル",
 		"setting.first_level.about": "新しいゲームが始まるレベル。オリジナルのゲームは1から始まります。",
 		"setting.fix_bigpillar_climb": "修正: 大きな柱の登り",

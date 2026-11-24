@@ -162,6 +162,8 @@
 		"setting.enable_remember_guard_hp.about": "A guard keeps the hit points he had when the prince comes back into his room.",
 		"setting.enable_super_high_jump": "Super high jump",
 		"setting.enable_super_high_jump.about": "During feather fall (after the green potion) the prince can jump two floors up.",
+		"setting.fade_frames": "Cutscene fade length",
+		"setting.fade_frames.about": "How many of a cutscene's frames a fade in or out takes. The DOS game does not time its fades: they take as long as the machine needs, and every frame of a cutscene draws random numbers. 18 is DOSBox-X at its default speed, 64 a slow machine (600 cycles or less). A movie records the number it ran with.",
 		"setting.first_level": "First level",
 		"setting.first_level.about": "The level a new game starts on. The original game starts on 1.",
 		"setting.fix_bigpillar_climb": "Fix: big pillar climb",

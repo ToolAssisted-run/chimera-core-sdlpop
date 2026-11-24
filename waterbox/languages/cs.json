@@ -163,6 +163,8 @@
 		"setting.enable_remember_guard_hp.about": "Strážce si podrží životy, které měl, když se princ vrátí do jeho místnosti.",
 		"setting.enable_super_high_jump": "Superskok",
 		"setting.enable_super_high_jump.about": "Během pádu pírkem (po zeleném lektvaru) může princ vyskočit o dvě patra nahoru.",
+		"setting.fade_frames": "Délka prolínání v animacích",
+		"setting.fade_frames.about": "Kolik snímků animace trvá roztmívání nebo zatmívání. DOS hra prolínání nečasuje: trvá tak dlouho, jak počítač potřebuje, a každý snímek animace losuje náhodná čísla. 18 je DOSBox-X ve výchozí rychlosti, 64 pomalý počítač (600 cyklů nebo méně). Záznam si pamatuje číslo, se kterým běžel.",
 		"setting.first_level": "První úroveň",
 		"setting.first_level.about": "Úroveň, na které začíná nová hra. Původní hra začíná na 1.",
 		"setting.fix_bigpillar_climb": "Oprava: vylezení na velký sloup",

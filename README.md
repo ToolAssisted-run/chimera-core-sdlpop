@@ -6,13 +6,17 @@ core**: the game itself, stepped one game step at a time in miniBox's sandbox,
 packaged as `sdlpop.chimeraCore`. It is the first core of its kind
 (`"kind": "game"`, see Chimera's `docs/game-cores.md`).
 
-**Built on upstream, with three small patches.** SDLPoP and SDL 2 are
+**Built on upstream, with seven small patches.** SDLPoP and SDL 2 are
 submodules, compiled from source into the core. Patch 0001 adds one call at
 each place the DOS game waited without saying for how long or looked at the
 controls; the game runs on a stack of its own and hands control back where it
 would have waited. Patch 0002 lets the core give the game its release's copy
 protection (each release's manual asks other words) and its own Ctrl+V line;
-patch 0003 enters the hall of fame's name from a setting.
+patch 0003 enters the hall of fame's name from a setting. Patches 0004 to 0007
+make the game outside its levels play as the DOS game was measured to: when
+the copy protection's table is drawn, how many frames a cutscene's fade takes,
+when the keyboard buffer is emptied, and what a level's end that waits for a
+sound leaves of the random numbers it drew.
 
 ## What it is
 
@@ -33,6 +37,11 @@ patch 0003 enters the hall of fame's name from a setting.
   (level 3's dungeon green, not blue); the copy protection asks from 1.0's,
   1.1's or 1.3/1.4's manual; Ctrl+V shows the release's own line. Of
   everything SDLPoP can read from a DOS PRINCE.EXE, nothing else differs.
+  Two things were measured on 1.4 running under DOSBox-X and are done for 1.4
+  only: it draws the copy protection's table when a game starts and not at
+  power-on as well, and a key pressed before a level's first tick is lost (no
+  free Restart Level there). 1.0, 1.1 and 1.3 were not measured and keep
+  SDLPoP's behaviour, which is 1.0's program.
 - **A frame is one step of the game**: a tick of play (1/12 s walking, 1/10 s
   fighting), each 1/60 s of the title, the cutscenes and a pause (which poll
   the controls that often), and a dark 1/10 s step when the prince changes
@@ -70,11 +79,18 @@ patch 0003 enters the hall of fame's name from a setting.
   (`"gameTimer"`), so Chimera shows it as `IGT mm:ss.mmm` and saves it in the
   project at the end of the movie.
 - **Settings** that change play, recorded in the project: the version, the
-  cheats, the player name, the sound card, the random seed, copy protection (on, as in the
+  cheats, the player name, the sound card, the random seed, the length of a
+  cutscene's fades, copy protection (on, as in the
   original), the first level, the minutes, the hit points, skipping the title,
   and SDLPoP's fixes and enhancements. **Defaults are the original game**:
   every fix and enhancement is off, each one's own switch as well as the
   master switch.
+- **The machine's speed is a setting too** (`fade_frames`): the DOS game does
+  not time a cutscene's fades, and every frame of a cutscene draws random
+  numbers, so how long a fade takes decides the next level's luck. 18 frames
+  (the default) is DOSBox-X at its default speed of 22000 cycles; 64 is a
+  machine of 600 cycles or less. A movie made to match a DOS machine takes
+  that machine's number.
 - **Files a project may add**: a custom level set (a LEVELS.DAT played in
   place of the original levels) and a **savestate** - an SDLPoP quicksave
   (QUICKSAVE.SAV) the run starts from. The files the game writes itself (its

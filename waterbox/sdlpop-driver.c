@@ -292,6 +292,7 @@ typedef struct
 	int cheats;               /* the game started with its cheat word */
 	int from_savestate;       /* the run starts from the "savestate" slot's quicksave */
 	char player_name[64];     /* the hall of fame's name for a won game */
+	int fade_frames;          /* the cutscene frames a fade takes (the fade_frames setting) */
 	char *argv[5];
 	long steps;               /* FrameAdvance calls so far */
 } pop_driver;
@@ -714,6 +715,11 @@ int chimera_copyprot_page_first(void) { return g.release->page_first; }
 const char *chimera_version_text(void) { return g.release->version_line; }
 /* patch 0003's: the hall of fame name (player_name, checked at Init) */
 const char *chimera_hof_name(void) { return g.player_name; }
+/* patches 0004 and 0006's: the release, 10 11 13 or 14, for what was measured
+ * on one release only */
+int chimera_release(void) { return (g.release->name[0] - '0') * 10 + (g.release->name[2] - '0'); }
+/* patch 0005's: the cutscene frames a fade takes on the machine being followed */
+int chimera_fade_frames(void) { return g.fade_frames > 0 ? g.fade_frames : 18; }
 
 /* A file a project may start from: an SDLPoP quicksave (QUICKSAVE.SAV). */
 static int load_slots(char *err, int errsize)
@@ -781,6 +787,10 @@ int popdrv_init(char *err, int errsize)
 	}
 	unsigned long seed = (unsigned long)wbx_setting_long("random_seed", 0) & 0xFFFFFFFFul;
 	snprintf(g.arg_seed, sizeof g.arg_seed, "seed=%lu", seed);
+	/* the frames a cutscene's fade takes: the DOS machine's speed, not the
+	 * game's (patch 0005). A fade has 64 steps, at least one a frame. */
+	long fade = wbx_setting_long("fade_frames", 18);
+	g.fade_frames = fade < 1 ? 1 : fade > 64 ? 64 : (int)fade;
 
 	/* a level set of the project's own: played in place of LEVELS.DAT, and
 	 * not held to 1.0's hash (it is meant to differ) */

@@ -27,63 +27,69 @@ local function finish(status, detail)
 	client.exit()
 end
 
-local job = {}
-for line in io.lines(os.getenv("MINIHAWK_JOB")) do
-	local k, v = line:match("^([^=]+)=(.*)$")
-	if k then job[k] = v end
+local function main()
+	local job = {}
+	for line in io.lines(os.getenv("MINIHAWK_JOB")) do
+		local k, v = line:match("^([^=]+)=(.*)$")
+		if k then job[k] = v end
+	end
+	meta.path = job.meta
+
+	if emu.getcorename() ~= "SDLPoP" then finish("ERROR", "wrong core: " .. tostring(emu.getcorename())) end
+
+	pcall(function() client.speedmode(6400) end)
+	pcall(function() client.invisibleemulation(true) end)
+
+	local frames = tonumber(job.frames) or 100
+	for _ = 1, frames do
+		emu.frameadvance()
+	end
+	meta.frames = emu.framecount()
+	meta.lag = emu.lagcount()
+
+	local function dump(domain, file)
+		memory.usememorydomain(domain)
+		local size = memory.getcurrentmemorydomainsize()
+		local bytes = memory.read_bytes_as_array(0, size, domain)
+		local chunks = {}
+		for i = 1, #bytes do chunks[i] = string.char(bytes[i]) end
+		writeAll(job.out .. "/" .. file, table.concat(chunks))
+		return bytes
+	end
+	local gs = dump("Game State", "gamestate.bin")
+	dump("Level", "level.bin")
+	if job.shot ~= nil and job.shot ~= "" then client.screenshot(job.shot) end
+
+	-- the project saved where it was opened, at the movie's end: its game time
+	-- headers are the machine's (docs/game-cores.md, gameTimer)
+	if job.save == "1" then
+		local ok, err = pcall(function() movie.save() end)
+		meta.saved = ok and "1" or tostring(err)
+	end
+
+	-- the property library, where this Chimera has it (docs/game-cores.md, Lua)
+	if game ~= nil and game.list ~= nil then
+		local ok, err = pcall(function()
+			local names = game.list()
+			meta.game_list = #names
+			meta.game_kid_x = game.get("Kid.X")
+			meta.game_kid_x_byte = gs[1] -- Kid.X is the block's first byte
+			meta.game_level_next = game.get("Level.Next")
+			meta.game_tile = game.get("Room 1.Tile[10]")
+			meta.game_set = tostring(game.set("Kid.X", 120))
+			meta.game_kid_x_after_set = game.get("Kid.X")
+			meta.game_unknown = tostring(game.get("No Such Property"))
+			meta.game_igt_ms = game.get("Time.IGT Ms")
+		end)
+		if not ok then meta.game_error = tostring(err) end
+	else
+		meta.game_list = "absent"
+	end
+
+	finish("OK", "")
 end
-meta.path = job.meta
 
-if emu.getsystemid() ~= "PrinceOfPersia" then finish("ERROR", "wrong system id: " .. tostring(emu.getsystemid())) end
-if emu.getcorename() ~= "SDLPoP" then finish("ERROR", "wrong core: " .. tostring(emu.getcorename())) end
-
-pcall(function() client.speedmode(6400) end)
-pcall(function() client.invisibleemulation(true) end)
-
-local frames = tonumber(job.frames) or 100
-for _ = 1, frames do
-	emu.frameadvance()
+local ok, err = xpcall(main, debug.traceback)
+if not ok then
+	finish("ERROR", (tostring(err):gsub("%s+", " ")))
 end
-meta.frames = emu.framecount()
-meta.lag = emu.lagcount()
-
-local function dump(domain, file)
-	memory.usememorydomain(domain)
-	local size = memory.getcurrentmemorydomainsize()
-	local bytes = memory.read_bytes_as_array(0, size, domain)
-	local chunks = {}
-	for i = 1, #bytes do chunks[i] = string.char(bytes[i]) end
-	writeAll(job.out .. "/" .. file, table.concat(chunks))
-	return bytes
-end
-local gs = dump("Game State", "gamestate.bin")
-dump("Level", "level.bin")
-if job.shot ~= nil and job.shot ~= "" then client.screenshot(job.shot) end
-
--- the project saved where it was opened, at the movie's end: its game time
--- headers are the machine's (docs/game-cores.md, gameTimer)
-if job.save == "1" then
-	local ok, err = pcall(function() movie.save() end)
-	meta.saved = ok and "1" or tostring(err)
-end
-
--- the property library, where this Chimera has it (docs/game-cores.md, Lua)
-if game ~= nil and game.list ~= nil then
-	local ok, err = pcall(function()
-		local names = game.list()
-		meta.game_list = #names
-		meta.game_kid_x = game.get("Kid.X")
-		meta.game_kid_x_byte = gs[1] -- Kid.X is the block's first byte
-		meta.game_level_next = game.get("Level.Next")
-		meta.game_tile = game.get("Room 1.Tile[10]")
-		meta.game_set = tostring(game.set("Kid.X", 120))
-		meta.game_kid_x_after_set = game.get("Kid.X")
-		meta.game_unknown = tostring(game.get("No Such Property"))
-		meta.game_igt_ms = game.get("Time.IGT Ms")
-	end)
-	if not ok then meta.game_error = tostring(err) end
-else
-	meta.game_list = "absent"
-end
-
-finish("OK", "")
